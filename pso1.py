@@ -10,25 +10,25 @@ def f(v):
 
 def PSO(swarm_size,shell_size,σmin,σmax,ε):
 	σdiff=σmax-σmin
-    x=np.random.rand(swarm_size,shell_size)*σdiff+σmin
-    p=x.copy()
-    g=p[f(p).argmin()].copy()
-    v=np.random.rand(swarm_size,shell_size)*2*abs(σdiff)-abs(σdiff)
+	x=np.random.rand(swarm_size,shell_size)*σdiff+σmin
+	p=x.copy()
+	g=p[f(p).argmin()].copy()
+	v=np.random.rand(swarm_size,shell_size)*2*abs(σdiff)-abs(σdiff)
 
-    i=0
-    while f(g)>=eps and i<100:
-    	rp,rg=np.split(
-    		np.random.rand(2*swarm_size,shell_size),
-    		2
-    	)
-    	v=ω*v+φp*rp*(p-x)+φg*rg*(g-x)
-    	x+=v
-    	
-    	c=f(x)<f(p)
-    	p[c]=x[c].copy()
-    	
-    	fp=f(p)
-    	if fp.min()<f(g):
-    		g=p[fp.argmin()].copy()
+	i=0
+	while f(g)>=eps and i<100:
+		rp,rg=np.split(
+			np.random.rand(2*swarm_size,shell_size),
+			2
+		)
+		v=ω*v+φp*rp*(p-x)+φg*rg*(g-x)
+		x+=v
+		
+		c=f(x)<f(p)
+		p[c]=x[c].copy()
+		
+		fp=f(p)
+		if fp.min()<f(g):
+			g=p[fp.argmin()].copy()
 
-    	i+=1
+		i+=1
