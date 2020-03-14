@@ -27,7 +27,7 @@ def PSO(f,swarm_size,shell_size,σmin,σmax,ε):
 	v=np.random.rand(swarm_size,shell_size)*2*abs(σdiff)-abs(σdiff)
 
 	i=0
-	while F(g)>=eps and i<100:
+	while F(g)>=ε and i<100:
 		rp,rg=np.split(#like vsplit by default?
 			np.random.rand(2*swarm_size,shell_size),
 			2
