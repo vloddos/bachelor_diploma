@@ -20,7 +20,7 @@ else take all the n^m vectors
 #todo type annotations
 #todo try to use python 3.8 with := anywhere
 #todo try to use coconut python
-def PSO(f,swarm_size,shell_size,σmin,σmax,ε):
+def PSO(f,ε,iter_num,swarm_size,shell_size,σmin,σmax):#iter_num excess???
 	def F(v):
 		if v.ndim==1:
 			return f(v)
@@ -34,8 +34,7 @@ def PSO(f,swarm_size,shell_size,σmin,σmax,ε):
 	g=p[F(p).argmin()].copy()
 	v=np.random.rand(swarm_size,shell_size)*2*abs(σdiff)-abs(σdiff)
 
-	i=0
-	while F(g)>=ε and i<100:
+	for _ in range(iter_num):
 		rp,rg=np.split(#like vsplit by default?
 			np.random.rand(2*swarm_size,shell_size),
 			2
@@ -51,6 +50,7 @@ def PSO(f,swarm_size,shell_size,σmin,σmax,ε):
 		if fp.min()<F(g):#когда все false???
 			g=p[fp.argmin()].copy()
 
-		i+=1
+		if F(g)<ε:
+			break
 
 	return g
