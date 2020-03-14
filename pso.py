@@ -8,10 +8,18 @@ import numpy as np
 то нужно узнать кароч че и как чтобы знать можно ли их распараллелить 
 '''
 
+'''
+todo random vector generator by web with n^m vectors
+m layers, n points on segment [σmin,σmax], n^m vectors in total
+take k random unique vectors if n^m>k
+else take all the n^m vectors
+'''
+
 #todo check all copy/assignment operations
 #todo random function with boundaries
 #todo type annotations
 #todo try to use python 3.8 with := anywhere
+#todo try to use coconut python
 def PSO(f,swarm_size,shell_size,σmin,σmax,ε):
 	def F(v):
 		if v.ndim==1:
