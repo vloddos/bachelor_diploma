@@ -67,24 +67,18 @@ def PSO(f, ε, iter_num, swarm_size, particle_size, b_lo, b_up, ω, φp, φg):
             return np.apply_along_axis(f, 1, v)
 
     # todo hold p,F(p),g,F(g) for optimizing and recount F(p)[c] only
+    rng = np.random.default_rng()
+
     b_diff = b_up - b_lo
-    x = np.random.choice(  # totry UNIQUE permutations
-        np.linspace(b_lo, b_up, 10),
-        (swarm_size, particle_size)
-    )
-    # x[-1, ::2] = b_lo  # fordebug
-    # x[-1, 1::2] = b_up  # fordebug
-
+    x = rng.choice(np.linspace(b_lo, b_up, 100),(swarm_size, particle_size))
     p = x.copy()
-
     g = p[F(p).argmin()].copy()
-    # ???choose max velocity more carefully
-    v = np.random.rand(swarm_size, particle_size) * 2 * abs(b_diff) - abs(b_diff)
+    v = rng.random((swarm_size, particle_size)) * 2 * abs(b_diff) - abs(b_diff) # ???choose max velocity more carefully
 
     for i in range(iter_num):
         print(i)
         # rp, rg = np.random.rand(2)
-        rp, rg = np.vsplit(np.random.rand(2 * swarm_size, particle_size), 2)
+        rp, rg = np.vsplit(rng.random((2 * swarm_size, particle_size)), 2)
         v = ω * v + φp * rp * (p - x) + φg * rg * (g - x)  # g-vector minus x-matrix works correctly
         x += v
         # возвращаем вышедшие за пределы компоненты
@@ -94,7 +88,6 @@ def PSO(f, ε, iter_num, swarm_size, particle_size, b_lo, b_up, ω, φp, φg):
         c = F(x) < F(p)
         p[c] = x[c].copy()  # when c.any()==False works correctly
 
-        # totry reduce code
         fp = F(p)
         if fp.min() < F(g):
             g = p[fp.argmin()].copy()
@@ -130,4 +123,14 @@ optimum shell: [0.44694444 0.0045     0.0045     0.0045     0.22572222 0.4469444
  0.77877778 0.33633333 0.44694444 1.         0.0045     0.0045
  0.88938889 0.0045     0.66816667 0.77877778]
 {'shielding': 0.09011365158833398, 'external cloaking': 0.3609391136998836, 'full cloaking': 0.2255263826441088}
+
+optimum shell: [0.0045     1.         0.88938889 0.33633333 0.0045     0.88938889
+ 0.88938889 0.44694444 0.0045     0.0045     0.88938889 0.0045
+ 0.55755556 0.88938889 0.0045     0.22572222]
+{'shielding': 0.0839690393104847, 'external cloaking': 0.3690728267221666, 'full cloaking': 0.22652093301632567}
+
+optimum shell: [0.0045     0.01455556 0.94972222 0.29611111 0.457      0.12516667
+ 0.85922222 0.0045     0.0045     0.37655556 0.69833333 0.638
+ 0.97988889 0.41677778 0.52738889 0.95977778]
+{'shielding': 0.16053605945504681, 'external cloaking': 0.31797606590506766, 'full cloaking': 0.23925606268005722}
 '''
