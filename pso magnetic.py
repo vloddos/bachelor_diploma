@@ -43,15 +43,21 @@ def get_solver_and_functional(Ha, μi, μe, a, b, shell_size, RMp1, problem):  #
         ))
         return np.hsplit(np.linalg.solve(c, d), 2)  # BM+1==B0!!!
 
-    def calculate_functionals(A, B):
+    def calculate_functionals(A0, BMp1):
         return {
-            'shielding': Ji(A[0], Ha),
-            'external cloaking': Je(B[0], Ha, *R[-2:]),
-            'full cloaking': J(A[0], B[0], Ha, *R[-2:])
+            'shielding': Ji(A0, Ha),
+            'external cloaking': Je(BMp1, Ha, *R[-2:]),
+            'full cloaking': J(A0, BMp1, Ha, *R[-2:])
         }
 
     def calculate_problem_functional(μ):  # M
-        return calculate_functionals(*solve_direct_problem(μ))[problem]
+        A, B = solve_direct_problem(μ)
+        if problem == 'shielding':
+            return Ji(A[0], Ha)
+        elif problem == 'external cloaking':
+            return Je(B[0], Ha, *R[-2:])
+        elif problem == 'full cloaking':
+            return J(A[0], B[0], Ha, *R[-2:])
 
     return solve_direct_problem, calculate_functionals, calculate_problem_functional
 
@@ -70,20 +76,19 @@ def PSO(f, ε, iter_num, swarm_size, particle_size, b_lo, b_up, ω, φp, φg):
     rng = np.random.default_rng()
 
     b_diff = b_up - b_lo
-    x = rng.choice(np.linspace(b_lo, b_up, 100),(swarm_size, particle_size))
+    x = b_diff * rng.random((swarm_size, particle_size)) + b_lo
     p = x.copy()
     g = p[F(p).argmin()].copy()
-    v = rng.random((swarm_size, particle_size)) * 2 * abs(b_diff) - abs(b_diff) # ???choose max velocity more carefully
+    v = rng.random((swarm_size, particle_size)) * 2 * abs(b_diff) - abs(b_diff)  # ???choose max velocity more carefully
 
     for i in range(iter_num):
-        print(i)
-        # rp, rg = np.random.rand(2)
-        rp, rg = np.vsplit(rng.random((2 * swarm_size, particle_size)), 2)
+        # print(i)
+        rp, rg = rng.random(2)
         v = ω * v + φp * rp * (p - x) + φg * rg * (g - x)  # g-vector minus x-matrix works correctly
         x += v
         # возвращаем вышедшие за пределы компоненты
-        bbi = np.where((x < b_lo) | (x > b_up))
-        x[bbi] = abs(x[bbi]) % b_diff + b_lo
+        x[x < b_lo] = b_lo
+        x[x > b_up] = b_up
 
         c = F(x) < F(p)
         p[c] = x[c].copy()  # when c.any()==False works correctly
@@ -105,32 +110,43 @@ def solve_inverse_problem(Ha, μi, μe, a, b, shell_size, RMp1, problem, ε, ite
     g = PSO(calculate_problem_functional, ε, iter_num, swarm_size, shell_size, b_lo, b_up, ω, φp, φg)
 
     print('optimum shell:', g)
-    print(calculate_functionals(*solve_direct_problem(g)))
+    A, B = solve_direct_problem(g)
+    print('; '.join(f"{k} : {'{:1.6e}'.format(v)}" for k, v in calculate_functionals(A[0], B[0]).items()))
+    # for k, v in calculate_functionals(A[0], B[0]).items():
+    #     print(k, ':', '{:1.2e}'.format(v), end='; ')
+    # print()
+    # print(calculate_functionals(*solve_direct_problem(np.full(shell_size, b_lo))))
+    # print(calculate_functionals(*solve_direct_problem(np.full(shell_size, b_up))))
+    # print(calculate_functionals(*solve_direct_problem(np.array(shell_size // 2 * [b_lo, b_up]))))
+    # print(calculate_functionals(*solve_direct_problem(np.array((shell_size // 2 - 1) * [b_lo, b_up] + [b_lo, 57.93]))))
+    # print(calculate_functionals(*solve_direct_problem(np.array((shell_size // 2 - 1) * [b_up, b_lo] + [b_up, 20.04]))))
 
 
-solve_inverse_problem(
-    10000, 1, 1, 0.04, 0.05, 16, 0.1, 'shielding', 1e-5, 200, 1600, 0.0045, 1, 0.7928, 1.49618, 1.49618
-)
+# ω, φp, φg = 0.7298, 1.49618, 1.49618
+# ω, φp, φg = 0.5, 1, 1.5
 '''
-with simple random
-optimum shell: [0.41111629 0.00487653 0.397468   0.00713477 0.9052451  0.37615172
- 0.67045311 0.41735351 0.16939995 0.36287447 0.00652736 0.68545541
- 0.62205175 0.62353195 0.70802879 0.00639357]
-{'shielding': 0.17549847760899412, 'external cloaking': 0.33205626220478984, 'full cloaking': 0.253777369906892}
+for ω, φp, φg in ((0.7298, 1.49618, 1.49618), (0.5, 1, 1.5)):
+    print(f'ω={ω}, φp={φp}, φg={φg}')
+    for i in range(1, 11):
+        print(i)
+        μmin = ε = 10 ** -i
+        solve_inverse_problem(
+            # 1488, 1, 1, 0.04, 0.05, 16, 0.1, 'full cloaking', 1e-7, 100, 160, 0.0045, 70, 0.7928, 1.49618, 1.49618
+            # 1488, 1, 1, 0.04, 0.05, 10, 0.1, 'shielding', 1e-7, 100, 160, 0.0045, 40, 0.7928, 1.49618, 1.49618
+            # 1000, 1, 1, 0.01, 0.05, 2, 0.1, 'full cloaking', ε, 100, 20, μmin, 10, 0.7928, 1.49618, 1.49618
+            1000, 1, 1, 0.01, 0.05, 2, 0.1, 'full cloaking', ε, 100, 20, μmin, 10, ω, φp, φg
+        )
+    print('=' * 80)
+# '''
 
-with random choice
-optimum shell: [0.44694444 0.0045     0.0045     0.0045     0.22572222 0.44694444
- 0.77877778 0.33633333 0.44694444 1.         0.0045     0.0045
- 0.88938889 0.0045     0.66816667 0.77877778]
-{'shielding': 0.09011365158833398, 'external cloaking': 0.3609391136998836, 'full cloaking': 0.2255263826441088}
-
-optimum shell: [0.0045     1.         0.88938889 0.33633333 0.0045     0.88938889
- 0.88938889 0.44694444 0.0045     0.0045     0.88938889 0.0045
- 0.55755556 0.88938889 0.0045     0.22572222]
-{'shielding': 0.0839690393104847, 'external cloaking': 0.3690728267221666, 'full cloaking': 0.22652093301632567}
-
-optimum shell: [0.0045     0.01455556 0.94972222 0.29611111 0.457      0.12516667
- 0.85922222 0.0045     0.0045     0.37655556 0.69833333 0.638
- 0.97988889 0.41677778 0.52738889 0.95977778]
-{'shielding': 0.16053605945504681, 'external cloaking': 0.31797606590506766, 'full cloaking': 0.23925606268005722}
-'''
+# '''
+for ω, φp, φg in ((0.7298, 1.49618, 1.49618), (0.5, 1, 1.5)):
+    print(f'ω={ω}, φp={φp}, φg={φg}')
+    for i in range(1, 9):
+        M = i * 2
+        print(f'M={M}')
+        solve_inverse_problem(
+            1000, 1, 1, 0.04, 0.05, M, 0.1, 'full cloaking', 1e-10, 100, 20 * i, 0.0045, 40, ω, φp, φg
+        )
+    print('=' * 80)
+# '''
