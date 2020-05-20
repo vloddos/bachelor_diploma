@@ -29,43 +29,44 @@ tr_d = {
 }
 ips_dict_list = []
 # M=2
-with open(f'full cloaking m=2.pickle', 'rb') as f:
-    ips_dict_list.append(pickle.load(f))
-
-print(f'% full cloaking m=2')
-print(r'\begin{table}[H]')
-print('\t' r'\begin{tabular}{ | c | c | c | c | c | }')
-print('\t\t' r'\hline')
-print(
-    '\t\t'
-    r'\(\varepsilon_1^{opt}\) & \(\varepsilon_2^{opt}\) & \(J_i(\mathbf{e}^{opt})\) & \(J_e(\mathbf{e}^{opt})\) & \(J(\mathbf{e}^{opt})\)'
-)
-print('\t\t' r'\\ \hline')
-
-for emin, ips in ips_dict_list[-1].items():
-    print(
-        '\t\t'
-        r'\({}\) & '.format(ips.optimum_shell[0]) +
-        r'\({} \times 10^{{{}}}\) & '.format(*frexp10(ips.optimum_shell[-1])) +
-        ' & '.join(
-            r'\(0.0\)' if i == 0 else r'\({:1.4} \times 10^{{{}}}\)'.format(*frexp10(i))
-            for i in ips.functionals.values()
-        )
-    )
-    print('\t\t' r'\\ \hline')
-
-print('\t' r'\end{tabular}')
-print(r'\end{table}')
-
-exit()
+# with open(f'full cloaking m=2.pickle', 'rb') as f:
+#     ips_dict_list.append(pickle.load(f))
+#
+# print(f'% full cloaking m=2')
+# print(r'\begin{table}[H]')
+# print('\t' r'\begin{tabular}{ | c | c | c | c | c | }')
+# print('\t\t' r'\hline')
+# print(
+#     '\t\t'
+#     r'\(\varepsilon_1^{opt}\) & \(\varepsilon_2^{opt}\) & \(J_i(\mathbf{e}^{opt})\) & \(J_e(\mathbf{e}^{opt})\) & \(J(\mathbf{e}^{opt})\)'
+# )
+# print('\t\t' r'\\ \hline')
+#
+# for emin, ips in ips_dict_list[-1].items():
+#     print(
+#         '\t\t'
+#         r'\({}\) & '.format(ips.optimum_shell[0]) +
+#         r'\({} \times 10^{{{}}}\) & '.format(*frexp10(ips.optimum_shell[-1])) +
+#         ' & '.join(
+#             r'\(0.0\)' if i == 0 else r'\({:1.4} \times 10^{{{}}}\)'.format(*frexp10(i))
+#             for i in ips.functionals.values()
+#         )
+#     )
+#     print('\t\t' r'\\ \hline')
+#
+# print('\t' r'\end{tabular}')
+# print(r'\end{table}')
+#
+# exit()
 # M=2,4,6,...,16
-for problem in 'shielding', 'external cloaking', 'full cloaking':
+# for problem in 'shielding', 'external cloaking', 'full cloaking':
+for problem in 'external cloaking', 'full cloaking':
     for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
         for b_up in 40, 70:
             with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'rb') as f:
                 ips_dict_list.append(pickle.load(f))
 
-            continue
+            # continue
 
             print(f'% {problem} a={a} b={b} b_up={b_up}')
             # print(r'\begin{center}')
@@ -91,7 +92,7 @@ for problem in 'shielding', 'external cloaking', 'full cloaking':
             for ipp, ips in ips_dict_list[-1].items():
                 print(
                     '\t\t'
-                    r'{} & \({}\) & '.format(
+                    r'{} & \({:1.7}\) & '.format(
                         ipp.shell_size,
                         ips.optimum_shell[0]
                     ) +
@@ -109,7 +110,7 @@ for problem in 'shielding', 'external cloaking', 'full cloaking':
 
             print('%' + '=' * 100)
 
-# exit()
+exit()
 
 for ips_dict in ips_dict_list:
     for ipp, ips in ips_dict.items():

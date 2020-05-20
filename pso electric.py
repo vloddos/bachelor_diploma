@@ -148,14 +148,20 @@ def solve_inverse_problem(
 
 w, c1, c2 = 0.5, 1, 1.5
 rng = np.random.default_rng()
-# for i in range(20):
-#     print(i)
-#     print(
-#         solve_inverse_problem(
-#             1, 1, 1, 0.03, 0.05, 16, 0.1, 'shielding', 0, 100, 40, 0.0045, 40, w, c1, c2, rng
-#         )
-#     )
+solution_list = []
+for i in range(20):
+    print(i)
+    solution_list.append(
+        solve_inverse_problem(
+            1, 1, 1, 0.04, 0.05, 16, 0.1, 'full cloaking', 0, 100, 40, 0.0045, 70, w, c1, c2, rng
+        )
+    )
+    print(solution_list[-1])
 
+with open('fc 0.04 0.05 70 16 inner.pickle', 'wb') as f:
+    pickle.dump(solution_list, f)
+
+'''
 print('BEGIN TIME = ', time.asctime())
 
 for problem in 'shielding', 'external cloaking', 'full cloaking':
@@ -184,15 +190,41 @@ for problem in 'shielding', 'external cloaking', 'full cloaking':
                 pickle.dump(inverse_problem_solution_dict, f)
 
 print('END TIME = ', time.asctime())
+'''
 
 '''
-InverseProblemSolution(optimum_shell=array([6.99820601e+01, 3.25547952e+01, 2.88065982e+01, 9.98462718e+00,
-       6.32456012e+01, 4.50000000e-03, 4.04955638e+01, 4.50000000e-03,
-       2.79334752e+01, 4.45259845e+00, 7.00000000e+01, 1.01882081e+01,
-       4.90622612e+01, 4.50000000e-03, 2.71014548e+01, 5.42772580e+00]), functionals={'shielding': 7.259205670521629e-05, 'external cloaking': 0.0, 'full cloaking': 3.629602835260814e-05})
-       
-InverseProblemSolution(optimum_shell=array([7.74029709e+00, 3.94216539e+01, 3.17685247e+01, 1.10309462e+01,
-       4.50000000e-03, 7.00000000e+01, 1.32436200e+01, 7.00000000e+01,
-       1.26113478e+01, 4.13314649e+01, 4.50000000e-03, 8.32485331e+00,
-       4.50000000e-03, 5.19723148e+01, 4.50000000e-03, 3.33734236e+01]), functionals={'shielding': 3.160750462347807e-05, 'external cloaking': 0.0, 'full cloaking': 1.5803752311739036e-05})
+fc 0.01 0.05 70 16 inner
+-2
+InverseProblemSolution(optimum_shell=array([7.00000000e+01, 4.50000000e-03, 7.00000000e+01, 4.50000000e-03,
+       7.00000000e+01, 4.50000000e-03, 6.99984848e+01, 4.50000000e-03,
+       7.00000000e+01, 4.50000000e-03, 7.00000000e+01, 4.50000000e-03,
+       7.00000000e+01, 4.50000000e-03, 7.00000000e+01, 6.90930886e-02]), functionals={'shielding': 6.041091589762917e-16, 'external cloaking': 9.249297156456155e-17, 'full cloaking': 3.483010652704266e-16})
+
+fc 0.03 0.05 40 16 inner
+9
+InverseProblemSolution(optimum_shell=array([4.00000000e+01, 4.50000000e-03, 3.19648247e+01, 4.50000000e-03,
+       4.00000000e+01, 4.50000000e-03, 3.79972431e+01, 4.50000000e-03,
+       4.00000000e+01, 4.50000000e-03, 3.14406668e+01, 4.50000000e-03,
+       4.00000000e+01, 4.50000000e-03, 3.16905971e+01, 1.70197337e+00]), functionals={'shielding': 7.044492338761227e-08, 'external cloaking': 2.3489244728792817e-17, 'full cloaking': 3.522246170555076e-08})
+
+fc 0.03 0.05 70 16 inner
+5
+InverseProblemSolution(optimum_shell=array([7.00000000e+01, 4.50000000e-03, 6.03563553e+01, 4.50000000e-03,
+       7.00000000e+01, 4.50000000e-03, 5.19757138e+01, 4.50000000e-03,
+       7.00000000e+01, 4.50000000e-03, 6.83606785e+01, 4.50000000e-03,
+       7.00000000e+01, 4.50000000e-03, 1.53285702e+01, 1.76522804e+01]), functionals={'shielding': 2.716789575488618e-09, 'external cloaking': 2.117471087400077e-16, 'full cloaking': 1.3583948936178634e-09})
+
+fc 0.04 0.05 70 14 inner
+4
+InverseProblemSolution(optimum_shell=array([4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 7.00000000e+01,
+       4.50000000e-03, 6.99803242e+01, 4.50000000e-03, 7.00000000e+01,
+       4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 7.00000000e+01,
+       4.50000000e-03, 5.22391937e+01]), functionals={'shielding': 7.104668239347539e-06, 'external cloaking': 2.927199615134163e-16, 'full cloaking': 3.5523341198201295e-06})
+
+fc 0.04 0.05 70 16 inner       
+14
+InverseProblemSolution(optimum_shell=array([4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 6.55556329e+01,
+       4.50000000e-03, 5.22605322e+01, 4.50000000e-03, 7.00000000e+01,
+       4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 7.00000000e+01,
+       4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 5.79339623e+01]), functionals={'shielding': 6.140665608438516e-06, 'external cloaking': 2.2587837805243685e-10, 'full cloaking': 3.070445743408284e-06})
 '''
