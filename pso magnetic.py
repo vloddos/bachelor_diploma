@@ -54,6 +54,14 @@ def get_solver_and_functional(Ea, σi, σe, a, b, shell_size, RMp1, problem):  #
             np.zeros(shell_size), -Ea * R[-2] ** 2,
             np.zeros(shell_size), -σ[-1] * Ea * R[-2] ** 2
         ))
+        # print(c)
+        # print(d)
+        # print(np.linalg.cond(c))
+        # print(np.hstack((c, d[:, np.newaxis])))
+        # np.savetxt(r'C:\Users\Windows\Desktop\4sloy_Abblyad.txt', np.hstack((c, d[:, np.newaxis])), '%.18f')
+        # np.savetxt(r'C:\Users\Windows\Desktop\4sloy_Ab.txt', np.hstack((c, d[:, np.newaxis])), '%.18f', newline=' ')
+        # np.savetxt(r'C:\Users\Windows\Desktop\4sloy_A.txt', c, '%.18f')
+        # np.savetxt(r'C:\Users\Windows\Desktop\4sloy_b.txt', d, '%.18f')
         return np.hsplit(np.linalg.solve(c, d), 2)  # BM+1==B0!!!
 
     def calculate_functionals(A0, BMp1):
@@ -165,6 +173,13 @@ def solve_inverse_problem(
     g = PSO(calculate_problem_functional, eps, iter_num, swarm_size, shell_size, b_lo, b_up, ω, φp, φg)
     A, B = solve_direct_problem(g)
     return InverseProblemSolution(g, calculate_functionals(A[0], B[0]))
+    # A, B = solve_direct_problem([0.004500, 40.000000, 0.004500, 40.000000, 0.004500, 40.000000, 0.004500, 34.804877])
+    # A, B = solve_direct_problem(
+    #     [0.004500000000000000, 40.000000000000000000, 0.004500000000000000, 40.000000000000000000, 0.004500000000000000,
+    #      40.000000000000000000, 0.004500000000000000, 33.521181256597074594])
+    # print(A[0])
+    # print(B[0])
+    # print(calculate_functionals(A[0], B[0]))
 
     # print('optimum shell:', g)
     # A, B = solve_direct_problem(g)
@@ -178,83 +193,61 @@ def solve_inverse_problem(
     # A, B = solve_direct_problem(np.array((shell_size // 2 - 1) * [b_up, b_lo] + [b_up, 20.04]))
     # print('; '.join(f"{k} : {'{:1.6e}'.format(v)}" for k, v in calculate_functionals(A[0], B[0]).items()))
 
-    # print(calculate_functionals(A[0], B[0]))
-    # print(calculate_functionals(*solve_direct_problem(np.array((shell_size // 2 - 1) * [b_lo, b_up] + [b_lo, 57.93]))))
-    # print(calculate_functionals(*solve_direct_problem(np.array((shell_size // 2 - 1) * [b_up, b_lo] + [b_up, 20.04]))))
 
-
-# ω, φp, φg = 0.7298, 1.49618, 1.49618
-'''
-# for ω, φp, φg in ((0.7298, 1.49618, 1.49618), (0.5, 1, 1.5)):
-#     print(f'ω={ω}, φp={φp}, φg={φg}')
-for i in [6]:
-    print(i)
-    μmin = ε = 10 ** -i
-    solve_inverse_problem(
-            # 1488, 1, 1, 0.04, 0.05, 16, 0.1, 'full cloaking', 1e-7, 100, 160, 0.0045, 70, 0.7928, 1.49618, 1.49618
-            # 1488, 1, 1, 0.04, 0.05, 10, 0.1, 'shielding', 1e-7, 100, 160, 0.0045, 40, 0.7928, 1.49618, 1.49618
-            # 1000, 1, 1, 0.01, 0.05, 2, 0.1, 'full cloaking', ε, 100, 20, μmin, 10, 0.7928, 1.49618, 1.49618
-        1000, 1, 1, 0.01, 0.05, 2, 0.1, 'full cloaking', ε, 100, 20, μmin, 10, ω, φp, φg
-    )
-    # print('=' * 80)
-# '''
-
-# '''
-# for ω, φp, φg in ((0.7298, 1.49618, 1.49618), (0.5, 1, 1.5)):
-#     print(f'ω={ω}, φp={φp}, φg={φg}')
 ω, φp, φg = 0.5, 1, 1.5
-print('TIME = ', time.asctime())
-for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
-    for b_up in 40, 70:
-        print('a b b_up', a, b, b_up)
-        inverse_problem_solution_dict = {}
-        for i in range(1, 9):
-            print(i)
-            ipp = InverseProblemParameters(1, 1, 1, a, b, i * 2, 0.1, 'full cloaking')
-            ips = solve_inverse_problem(
-                # 1, 1, 1, 0.01, 0.05, M, 0.1, 'full cloaking', 1e-10, 100, 20 * i, 0.0045, 70, ω, φp, φg
-                *ipp, 0, 100, 2000 * i, 0.0045, b_up, ω, φp, φg
-            )
-            if ipp not in inverse_problem_solution_dict or \
-                    ips.functionals[ipp.problem] < inverse_problem_solution_dict[ipp].functionals[ipp.problem]:
+print(solve_inverse_problem(1, 1, 1, 0.035, 0.05, 16, 0.1, 'full cloaking', 0, 100, 40, 0.1, 40, 0.5, 1, 1.5))
+'''
+print(f'TIME = {time.asctime()}')
+inverse_problem_solution_dict = {}
+ipp = InverseProblemParameters(1, 1, 1, 0.01, 0.05, 2, 0.1, 'full cloaking')
+for i in range(-1, -11, -1):
+    εmin = 10 ** i
+    ips = solve_inverse_problem(
+        *ipp, 0, 100, 2000, εmin, 10, ω, φp, φg
+    )
+    inverse_problem_solution_dict[εmin] = ips
+
+    print(εmin)
+    print(ips)
+    print('-' * 80)
+
+print(f'TIME = {time.asctime()}')
+
+with open(f'full cloaking m=2.pickle', 'wb') as f:
+    pickle.dump(inverse_problem_solution_dict, f)
+'''
+
+'''
+log_file = open('pso log.txt', 'a')
+print('TIME = ', time.asctime(), file=log_file)
+for problem in 'shielding', 'external cloaking':
+    for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
+        for b_up in 40, 70:
+            print('a b b_up', a, b, b_up)
+            inverse_problem_solution_dict = {}
+            for i in range(1, 9):
+                print(i)
+                ipp = InverseProblemParameters(1, 1, 1, a, b, i * 2, 0.1, problem)
+                ips = solve_inverse_problem(
+                    *ipp, 0, 100, 2000, 0.0045, b_up, ω, φp, φg
+                )
                 inverse_problem_solution_dict[ipp] = ips
 
-        with open(f'full cloaking a={a} b={b} b_up={b_up}.pickle', 'wb') as f:
-            pickle.dump(inverse_problem_solution_dict, f)
+                # print(ipp, file=log_file)
+                # print(ips, file=log_file)
+                # print('-' * 80, file=log_file)
 
-        for k, v in inverse_problem_solution_dict.items():
-            print(k)
-            print(v)
-            print('-' * 80)
+                print(ipp)
+                print(ips)
+                print('-' * 80)
 
-        print('=' * 100)
-        print('TIME = ', time.asctime())
-# print(inverse_problem_solution_dict)
-'''
-{InverseProblemParameters(Ea=1, σi=1, σe=1, a=0.01, b=0.05, shell_size=2, RMp1=0.1, problem='full cloaking'): InverseProblemSolution(optimum_shell=array([0.0045, 1.    ]), functionals={'shielding': 0.020024320897405565, 'external cloaking': 0.15304655972869177, 'full cloaking': 0.08653544031304866}), InverseProblemParameters(Ea=1, σi=1, σe=1, a=0.01, b=0.05, shell_size=4, RMp1=0.1, problem='full cloaking'): InverseProblemSolution(optimum_shell=array([0.0045, 1.    , 1.    , 1.    ]), functionals={'shielding': 0.0236448484648455, 'external cloaking': 0.06776939024658171, 'full cloaking': 0.0457071193557136}), InverseProblemParameters(Ea=1, σi=1, σe=1, a=0.01, b=0.05, shell_size=6, RMp1=0.1, problem='full cloaking'): InverseProblemSolution(optimum_shell=array([1.    , 0.0045, 1.    , 1.    , 1.    , 1.    ]), functionals={'shielding': 0.03575701865275852, 'external cloaking': 0.09109736636425671, 'full cloaking': 0.06342719250850762}), InverseProblemParameters(Ea=1, σi=1, σe=1, a=0.01, b=0.05, shell_size=8, RMp1=0.1, problem='full cloaking'): InverseProblemSolution(optimum_shell=array([0.0045, 1.    , 1.    , 1.    , 1.    , 1.    , 1.    , 1.    ]), functionals={'shielding': 0.03165854887080865, 'external cloaking': 0.037807399433046694, 'full cloaking': 0.03473297415192767}), InverseProblemParameters(Ea=1, σi=1, σe=1, a=0.01, b=0.05, shell_size=10, RMp1=0.1, problem='full cloaking'): InverseProblemSolution(optimum_shell=array([0.0045    , 1.        , 1.        , 1.        , 0.88164457,
-       1.        , 1.        , 1.        , 1.        , 1.        ]), functionals={'shielding': 0.03588063625932177, 'external cloaking': 0.03530616251291336, 'full cloaking': 0.035593399386117566}), InverseProblemParameters(Ea=1, σi=1, σe=1, a=0.01, b=0.05, shell_size=12, RMp1=0.1, problem='full cloaking'): InverseProblemSolution(optimum_shell=array([0.0045, 1.    , 1.    , 1.    , 1.    , 1.    , 1.    , 1.    ,
-       1.    , 1.    , 1.    , 1.    ]), functionals={'shielding': 0.039860809651242966, 'external cloaking': 0.029619480338332643, 'full cloaking': 0.03474014499478781}), InverseProblemParameters(Ea=1, σi=1, σe=1, a=0.01, b=0.05, shell_size=14, RMp1=0.1, problem='full cloaking'): InverseProblemSolution(optimum_shell=array([0.0045, 0.0045, 1.    , 1.    , 1.    , 1.    , 1.    , 1.    ,
-       1.    , 1.    , 1.    , 1.    , 1.    , 1.    ]), functionals={'shielding': 0.02961997571161948, 'external cloaking': 0.04158118891586229, 'full cloaking': 0.035600582313740886}), InverseProblemParameters(Ea=1, σi=1, σe=1, a=0.01, b=0.05, shell_size=16, RMp1=0.1, problem='full cloaking'): InverseProblemSolution(optimum_shell=array([0.0045    , 0.45231201, 0.79812088, 0.0045    , 0.0045    ,
-       1.        , 1.        , 1.        , 1.        , 1.        ,
-       1.        , 1.        , 1.        , 1.        , 1.        ,
-       1.        ]), functionals={'shielding': 0.006133974884359569, 'external cloaking': 0.08415744088590815, 'full cloaking': 0.04514570788513386})}
-'''
-'''
-{'shielding': 0.014787955284087412, 'external cloaking': 1.2660982569758628e-16, 'full cloaking': 0.007393977642043769}
-{'shielding': 2.6830224542942666e-05, 'external cloaking': 0.0, 'full cloaking': 1.3415112271471333e-05}
-{'shielding': 1.7583433492344072e-07, 'external cloaking': 0.0, 'full cloaking': 8.791716746172036e-08}
-{'shielding': 2.5091804195164257e-09, 'external cloaking': 0.0, 'full cloaking': 1.2545902097582128e-09}
-{'shielding': 6.22988392123863e-11, 'external cloaking': 1.0049775799438554e-11, 'full cloaking': 3.6174307505912427e-11}
-{'shielding': 2.3695144682396352e-12, 'external cloaking': 2.8874881321642302e-11, 'full cloaking': 1.562219789494097e-11}
-{'shielding': 1.2712640761473922e-13, 'external cloaking': 8.222643847487434e-12, 'full cloaking': 4.174885127551087e-12}
-{'shielding': 9.077846995021184e-15, 'external cloaking': 1.3688862571471389e-10, 'full cloaking': 6.844885178085445e-11}
+            with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'wb') as f:
+                pickle.dump(inverse_problem_solution_dict, f)
 
-2 2.1157242550480544
-4 4.485990791379854
-6 6.849022163547021
-8 9.167404941959008
-10 11.436047904310172
-12 13.654641613210709
-14 15.824358186060602
-16 17.947036677753093
+            # print('=' * 100, file=log_file)
+            # print('TIME = ', time.asctime(), file=log_file)
+
+            print('=' * 100)
+            print('TIME = ', time.asctime())
+log_file.close()
 '''
