@@ -93,7 +93,7 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
         np.tile([t, t[::-1]], (swarm_size // 2, particle_size // 2)),
         ((0, swarm_size % 2), (0, particle_size % 2)),
         'reflect'
-    ) + delta * rng.random((swarm_size, particle_size))
+    ) + delta * rng.random((swarm_size, particle_size))  # tocheck even/odd reflect type
     # print(x)
 
     p = x.copy()
@@ -104,7 +104,7 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
     Fg = Fp[imin]
 
     v_min, v_max = -b_diff, b_diff
-    v = (v_max - v_min) * rng.random((swarm_size, particle_size)) + v_min
+    v = (v_max - v_min) * rng.random((swarm_size, particle_size)) + v_min  # у алекса zeros
     # v = 2 * b_diff * rng.random((swarm_size, particle_size)) - b_diff  # init???
     # x v beyond boundaries???
 
@@ -146,20 +146,56 @@ def solve_inverse_problem(
     return InverseProblemSolution(g, calculate_functionals(A[0], B[0]))
 
 
-w, c1, c2 = 0.5, 1, 1.5
-rng = np.random.default_rng()
-solution_list = []
-for i in range(20):
-    print(i)
-    solution_list.append(
-        solve_inverse_problem(
-            1, 1, 1, 0.04, 0.05, 16, 0.1, 'full cloaking', 0, 100, 40, 0.0045, 70, w, c1, c2, rng
-        )
-    )
-    print(solution_list[-1])
+if __name__ == '__main__':
+    w, c1, c2 = 0.5, 1, 1.5
+    rng = np.random.default_rng()
 
-with open('fc 0.04 0.05 70 16 inner.pickle', 'wb') as f:
-    pickle.dump(solution_list, f)
+    print('BEGIN TIME = ', time.asctime())
+
+    # for RMp1 in 0.07, 0.15, 0.3, 0.6:
+    for RMp1 in 0.3, 0.6:
+        print(f'RMp1={RMp1}')
+
+        inverse_problem_solution_dict = {}
+        for i in range(-1, -11, -1):
+            e_min = 10 ** i
+            for j in range(20):
+                ips_new = solve_inverse_problem(
+                    1, 1, 1, 0.01, 0.05, 2, RMp1, 'full cloaking', 0, 500, 20, e_min, 10, w, c1, c2, rng
+                )
+                ips_old = inverse_problem_solution_dict.get(e_min)
+
+                if ips_old is None or \
+                        ips_new.functionals['full cloaking'] < ips_old.functionals['full cloaking'] or \
+                        (np.array(tuple(ips_new.functionals.values())) <=
+                         np.array(tuple(ips_old.functionals.values()))).all():
+                    inverse_problem_solution_dict[e_min] = ips_new
+
+            print(f'e_min={e_min}')
+            print(inverse_problem_solution_dict[e_min])
+            print('-' * 80)
+
+        print('=' * 100)
+        print('TIME = ', time.asctime())
+
+        with open(f'full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle', 'wb') as f:
+            pickle.dump(inverse_problem_solution_dict, f)
+
+    print('END TIME = ', time.asctime())
+'''
+    solution_list = []
+    for i in range(20):
+        print(i)
+        solution_list.append(
+            solve_inverse_problem(
+                1, 1, 1, 0.01, 0.05, 2, 0.1, 'full cloaking', 0, 100, 20, 0.01, 10, w, c1, c2, rng
+            )
+        )
+        print(solution_list[-1])
+
+    with open('fc 0.04 0.05 70 16 inner.pickle', 'wb') as f:
+        pickle.dump(solution_list, f)
+'''
 
 '''
 print('BEGIN TIME = ', time.asctime())
