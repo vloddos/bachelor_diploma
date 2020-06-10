@@ -104,7 +104,9 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
     Fg = Fp[imin]
 
     v_min, v_max = -b_diff, b_diff
-    v = (v_max - v_min) * rng.random((swarm_size, particle_size)) + v_min  # у алекса zeros
+    # v_min, v_max = -b_diff/1000, b_diff/1000
+    # v = (v_max - v_min) * rng.random((swarm_size, particle_size)) + v_min  # у алекса zeros
+    v = np.zeros((swarm_size, particle_size))  # tocheck
     # v = 2 * b_diff * rng.random((swarm_size, particle_size)) - b_diff  # init???
     # x v beyond boundaries???
 
@@ -137,20 +139,18 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
 
 def solve_inverse_problem(
         Ea, ei, ee, a, b, shell_size, RMp1, problem,
-        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng,
-        optimum_shell
+        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng
 ):
     solve_direct_problem, calculate_functionals, calculate_problem_functional = \
         get_solver_and_functional(Ea, ei, ee, a, b, shell_size, RMp1, problem)
 
-    # g = PSO(
-    #     calculate_problem_functional,
-    #     eps, iter_num, swarm_size, shell_size, b_lo, b_up, w, c1, c2, rng
-    # )
-    #
-    # A, B = solve_direct_problem(g)
-    A, B = solve_direct_problem(optimum_shell)
-    return InverseProblemSolution(optimum_shell, calculate_functionals(A[0], B[0]))
+    g = PSO(
+        calculate_problem_functional,
+        eps, iter_num, swarm_size, shell_size, b_lo, b_up, w, c1, c2, rng
+    )
+
+    A, B = solve_direct_problem(g)
+    return InverseProblemSolution(g, calculate_functionals(A[0], B[0]))
 
 
 def SAME_get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
@@ -243,17 +243,23 @@ def get_multi_layer_all_problems_solutions(w, c1, c2, rng):
 
 
 def get_individual_problem_solution(w, c1, c2, rng):
+    J_list = []
     solution_list = []
     for i in range(20):
         print(i)
         solution_list.append(
             solve_inverse_problem(
-                1, 1, 1, 0.01, 0.05, 2, 0.1, 'full cloaking', 0, 100, 20, 0.01, 10, w, c1, c2, rng
+                1, 1, 1, 0.01, 0.05, 2, 0.6, 'full cloaking', 0, 100, 20, 1e-1, 3, w, c1, c2, rng
             )
         )
         print(solution_list[-1])
+        print('{:.15f}'.format(solution_list[-1].optimum_shell[1]))
+        J_list.append(solution_list[-1].functionals['full cloaking'])
 
-    with open('multi parameter/fc 0.04 0.05 70 16 inner.pickle', 'wb') as f:
+    imin = np.argmin(np.array(J_list))
+    print('imin=', imin)
+
+    with open(fr'updated 2 layer full cloaking\fc M=2 a=0.01 b=0.05 RMp1=0.6 emin=0.01 imin={imin}.pickle', 'wb') as f:
         pickle.dump(solution_list, f)
 
 
@@ -267,9 +273,14 @@ def get_2_layer_full_cloaking_RMp1_dependence_plot():
     x_list, y_list = [], []
 
     for RMp1, marker in zip((0.07, 0.1, 0.15, 0.3, 0.6), ('o', '^', 's', '+', 'x')):
+        # with open(
+        #         'same solutions different Je 2 layer full cloaking\\' +
+        #         f'same solutions different Je full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle',
+        #         'rb'
+        # ) as file:
         with open(
-                'same solutions different Je 2 layer full cloaking\\' +
-                f'same solutions different Je full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle',
+                'updated 2 layer full cloaking\\' +
+                f'updated full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle',
                 'rb'
         ) as file:
             inverse_problem_solution_dict_list.append(pickle.load(file))
@@ -282,28 +293,29 @@ def get_2_layer_full_cloaking_RMp1_dependence_plot():
         x_list.append(np.array(x))
         y_list.append(np.array(y))
 
-        pp.scatter(x_list[-1], y_list[0] / y_list[-1], marker=marker, label=fr'$R_{{M+1}}={RMp1}$')
+        print(y_list[0] / y_list[-1])  # fordebug
+        fxy = np.nan_to_num(y_list[0] / y_list[-1], nan=1)
+        pp.scatter(x_list[-1], fxy, marker=marker, label=fr'$R_{{M+1}}={RMp1}$')
 
         asymptote = f(0.07) / f(RMp1)
         pp.hlines(asymptote, x_list[-1].min(), x_list[-1].max())
 
+    # мб лучше убрать титл и написать только в техе вместе с одз
     # pp.title(
     #     r'$ f(x, y) = \frac'
-    #     r'{J_{e, R_{M+1} = 0.07, \varepsilon_{min} = x} (e^{opt})}'
-    #     r'{J_{e, R_{M+1} = y, \varepsilon_{min} = x} (e^{opt})}$'
+    #     r'{J_{e_{R_{M+1} = 0.07, \varepsilon_{min} = x}} (\mathbf{e}^{opt})}'
+    #     r'{J_{e_{R_{M+1} = y, \varepsilon_{min} = x}} (\mathbf{e}^{opt})}$',
+    #     fontsize=30
     # )
-    pp.title(
-        r'$ f(x, y) = \frac'
-        r'{J_{e_{R_{M+1} = 0.07, \varepsilon_{min} = x}} (e^{opt})}'
-        r'{J_{e_{R_{M+1} = y, \varepsilon_{min} = x}} (e^{opt})}$',
-        fontsize=30
-    )
-    pp.xlabel(r'$\lg \varepsilon_{min}$')
-    pp.ylabel('$f(x,y)$')
+    pp.xlabel(r'$\lg \varepsilon_{min}$', fontsize=30)
+    pp.ylabel('$f(x,y)$', fontsize=30)
     pp.legend()
     pp.show()
 
 
 if __name__ == '__main__':
-    # SAME_get_2_layer_full_cloaking_problem_solutions(0.5, 1, 1.5, np.random.default_rng())
+    # w, c1, c2 = 0.5, 1, 1.5
+    # rng = np.random.default_rng()
+    # SAME_get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng)
     get_2_layer_full_cloaking_RMp1_dependence_plot()
+    # get_individual_problem_solution(w, c1, c2, rng)

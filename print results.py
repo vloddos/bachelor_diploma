@@ -64,7 +64,7 @@ def print_2_layer_tables():
                 r'\(10.0\) &' +
                 # r'\( {:.1f} \times 10^{{{}}} \) & '.format(*frexp10(ips.optimum_shell[0])) +
                 r'\( 10^{{{}}} \) & '.format(frexp10(ips.optimum_shell[0])[1]) +
-                r'\( {:.17f} \) & '.format(*frexp10(ips.optimum_shell[1])) +
+                r'\( {:.15f} \) & '.format(*frexp10(ips.optimum_shell[1])) +
                 ' & '.join(
                     r'\(0.0\)' if i == 0 else r'\({:.3f} \times 10^{{{}}}\)'.format(*frexp10(i))
                     for i in ips.functionals.values()
