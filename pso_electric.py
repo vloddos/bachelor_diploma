@@ -136,20 +136,47 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
 
 
 def solve_inverse_problem(
-        Ea, ei, ee, a, b, shell_size, RMp1, problem, eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng
+        Ea, ei, ee, a, b, shell_size, RMp1, problem,
+        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng,
+        optimum_shell
 ):
     solve_direct_problem, calculate_functionals, calculate_problem_functional = \
         get_solver_and_functional(Ea, ei, ee, a, b, shell_size, RMp1, problem)
 
-    g = PSO(calculate_problem_functional, eps, iter_num, swarm_size, shell_size, b_lo, b_up, w, c1, c2, rng)
-    A, B = solve_direct_problem(g)
-    return InverseProblemSolution(g, calculate_functionals(A[0], B[0]))
+    # g = PSO(
+    #     calculate_problem_functional,
+    #     eps, iter_num, swarm_size, shell_size, b_lo, b_up, w, c1, c2, rng
+    # )
+    #
+    # A, B = solve_direct_problem(g)
+    A, B = solve_direct_problem(optimum_shell)
+    return InverseProblemSolution(optimum_shell, calculate_functionals(A[0], B[0]))
 
 
-if __name__ == '__main__':
-    w, c1, c2 = 0.5, 1, 1.5
-    rng = np.random.default_rng()
+def SAME_get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
+    with open(r'1 parameter\1 parameter full cloaking m=2.pickle', 'rb') as f:
+        inverse_problem_solution_dict = pickle.load(f)
 
+    for RMp1 in 0.07, 0.15, 0.3, 0.6:
+        print(f'RMp1={RMp1}')
+
+        for e_min, ips in inverse_problem_solution_dict.items():
+            inverse_problem_solution_dict[e_min] = solve_inverse_problem(
+                1, 1, 1, 0.01, 0.05, 2, RMp1, 'full cloaking', 0, 100, 20, e_min, 10, w, c1, c2, rng,
+                ips.optimum_shell
+            )
+
+            print(f'e_min={e_min}')
+            print(inverse_problem_solution_dict[e_min])
+            print('-' * 80)
+
+        print('=' * 100)
+
+        with open(f'SAME full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle', 'wb') as f:
+            pickle.dump(inverse_problem_solution_dict, f)
+
+
+def get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
     print('BEGIN TIME = ', time.asctime())
 
     # for RMp1 in 0.07, 0.15, 0.3, 0.6:
@@ -161,7 +188,7 @@ if __name__ == '__main__':
             e_min = 10 ** i
             for j in range(20):
                 ips_new = solve_inverse_problem(
-                    1, 1, 1, 0.01, 0.05, 2, RMp1, 'full cloaking', 0, 500, 20, e_min, 10, w, c1, c2, rng
+                    1, 1, 1, 0.01, 0.05, 2, RMp1, 'full cloaking', 0, 100, 20, e_min, 10, w, c1, c2, rng
                 )
                 ips_old = inverse_problem_solution_dict.get(e_min)
 
@@ -182,7 +209,40 @@ if __name__ == '__main__':
             pickle.dump(inverse_problem_solution_dict, f)
 
     print('END TIME = ', time.asctime())
-'''
+
+
+def get_multi_layer_all_problems_solutions(w, c1, c2, rng):
+    print('BEGIN TIME = ', time.asctime())
+
+    for problem in 'shielding', 'external cloaking', 'full cloaking':
+        for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
+            for b_up in 40, 70:
+                inverse_problem_solution_dict = {}
+                for M in range(2, 18, 2):
+                    ipp = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem)
+                    for i in range(20):
+                        ips_new = solve_inverse_problem(
+                            *ipp, 0, 100, 40, 0.0045, b_up, w, c1, c2, rng
+                        )
+                        ips_old = inverse_problem_solution_dict.get(ipp)
+
+                        if ips_old is None or \
+                                ips_new.functionals[ipp.problem] < ips_old.functionals[ipp.problem] or \
+                                (np.array(tuple(ips_new.functionals.values())) <=
+                                 np.array(tuple(ips_old.functionals.values()))).all():
+                            inverse_problem_solution_dict[ipp] = ips_new
+
+                print(inverse_problem_solution_dict)
+                print('=' * 100)
+                print('TIME = ', time.asctime())
+
+                with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'wb') as f:
+                    pickle.dump(inverse_problem_solution_dict, f)
+
+    print('END TIME = ', time.asctime())
+
+
+def get_individual_problem_solution(w, c1, c2, rng):
     solution_list = []
     for i in range(20):
         print(i)
@@ -193,74 +253,15 @@ if __name__ == '__main__':
         )
         print(solution_list[-1])
 
-    with open('fc 0.04 0.05 70 16 inner.pickle', 'wb') as f:
+    with open('multi parameter/fc 0.04 0.05 70 16 inner.pickle', 'wb') as f:
         pickle.dump(solution_list, f)
-'''
 
-'''
-print('BEGIN TIME = ', time.asctime())
 
-for problem in 'shielding', 'external cloaking', 'full cloaking':
-    for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
-        for b_up in 40, 70:
-            inverse_problem_solution_dict = {}
-            for M in range(2, 18, 2):
-                ipp = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem)
-                for i in range(20):
-                    ips_new = solve_inverse_problem(
-                        *ipp, 0, 100, 40, 0.0045, b_up, w, c1, c2, rng
-                    )
-                    ips_old = inverse_problem_solution_dict.get(ipp)
+def get_2_layer_full_cloaking_RMp1_dependence_plot():
+    for RMp1 in 0.07, 0.1, 0.15, 0.3, 0.6:
+        ...
 
-                    if ips_old is None or \
-                            ips_new.functionals[ipp.problem] < ips_old.functionals[ipp.problem] or \
-                            (np.array(tuple(ips_new.functionals.values())) <=
-                             np.array(tuple(ips_old.functionals.values()))).all():
-                        inverse_problem_solution_dict[ipp] = ips_new
 
-            print(inverse_problem_solution_dict)
-            print('=' * 100)
-            print('TIME = ', time.asctime())
 
-            with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'wb') as f:
-                pickle.dump(inverse_problem_solution_dict, f)
-
-print('END TIME = ', time.asctime())
-'''
-
-'''
-fc 0.01 0.05 70 16 inner
--2
-InverseProblemSolution(optimum_shell=array([7.00000000e+01, 4.50000000e-03, 7.00000000e+01, 4.50000000e-03,
-       7.00000000e+01, 4.50000000e-03, 6.99984848e+01, 4.50000000e-03,
-       7.00000000e+01, 4.50000000e-03, 7.00000000e+01, 4.50000000e-03,
-       7.00000000e+01, 4.50000000e-03, 7.00000000e+01, 6.90930886e-02]), functionals={'shielding': 6.041091589762917e-16, 'external cloaking': 9.249297156456155e-17, 'full cloaking': 3.483010652704266e-16})
-
-fc 0.03 0.05 40 16 inner
-9
-InverseProblemSolution(optimum_shell=array([4.00000000e+01, 4.50000000e-03, 3.19648247e+01, 4.50000000e-03,
-       4.00000000e+01, 4.50000000e-03, 3.79972431e+01, 4.50000000e-03,
-       4.00000000e+01, 4.50000000e-03, 3.14406668e+01, 4.50000000e-03,
-       4.00000000e+01, 4.50000000e-03, 3.16905971e+01, 1.70197337e+00]), functionals={'shielding': 7.044492338761227e-08, 'external cloaking': 2.3489244728792817e-17, 'full cloaking': 3.522246170555076e-08})
-
-fc 0.03 0.05 70 16 inner
-5
-InverseProblemSolution(optimum_shell=array([7.00000000e+01, 4.50000000e-03, 6.03563553e+01, 4.50000000e-03,
-       7.00000000e+01, 4.50000000e-03, 5.19757138e+01, 4.50000000e-03,
-       7.00000000e+01, 4.50000000e-03, 6.83606785e+01, 4.50000000e-03,
-       7.00000000e+01, 4.50000000e-03, 1.53285702e+01, 1.76522804e+01]), functionals={'shielding': 2.716789575488618e-09, 'external cloaking': 2.117471087400077e-16, 'full cloaking': 1.3583948936178634e-09})
-
-fc 0.04 0.05 70 14 inner
-4
-InverseProblemSolution(optimum_shell=array([4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 7.00000000e+01,
-       4.50000000e-03, 6.99803242e+01, 4.50000000e-03, 7.00000000e+01,
-       4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 7.00000000e+01,
-       4.50000000e-03, 5.22391937e+01]), functionals={'shielding': 7.104668239347539e-06, 'external cloaking': 2.927199615134163e-16, 'full cloaking': 3.5523341198201295e-06})
-
-fc 0.04 0.05 70 16 inner       
-14
-InverseProblemSolution(optimum_shell=array([4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 6.55556329e+01,
-       4.50000000e-03, 5.22605322e+01, 4.50000000e-03, 7.00000000e+01,
-       4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 7.00000000e+01,
-       4.50000000e-03, 7.00000000e+01, 4.50000000e-03, 5.79339623e+01]), functionals={'shielding': 6.140665608438516e-06, 'external cloaking': 2.2587837805243685e-10, 'full cloaking': 3.070445743408284e-06})
-'''
+if __name__ == '__main__':
+    SAME_get_2_layer_full_cloaking_problem_solutions(0.5, 1, 1.5, np.random.default_rng())

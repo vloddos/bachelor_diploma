@@ -13,15 +13,6 @@ def frexp10(x):
     return m, e
 
 
-# InverseProblemParameters = namedtuple(
-#     'InverseProblemParameters',
-#     ('Ea', 'σi', 'σe', 'a', 'b', 'shell_size', 'RMp1', 'problem')
-# )
-# InverseProblemSolution = namedtuple(
-#     'InverseProblemSolution',
-#     ('optimum_shell', 'functionals')
-# )
-
 tr_d = {
     'shielding': 'Задача экранирования: ',
     'external cloaking': 'Задача внешней маскировки: ',
@@ -31,33 +22,63 @@ ips_dict_list = []
 
 
 def print_2_layer_tables():
-    with open(f'full cloaking m=2.pickle', 'rb') as f:
-        ips_dict_list.append(pickle.load(f))
+    # for RMp1 in 0.07, 0.1, 0.15, 0.3, 0.6:
+    for RMp1 in 0.07, 0.15, 0.3, 0.6:
+        # with open(fr'2 layer full cloaking\full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle', 'rb') as f:
+        with open(fr'SAME full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle', 'rb') as f:
+            ips_dict_list.append(pickle.load(f))
 
-    print(f'% full cloaking m=2')
-    print(r'\begin{table}[H]')
-    print('\t' r'\begin{tabular}{ | c | c | c | c | c | }')
-    print('\t\t' r'\hline')
-    print(
-        '\t\t'
-        r'\(\varepsilon_1^{opt}\) & \(\varepsilon_2^{opt}\) & \(J_i(\mathbf{e}^{opt})\) & \(J_e(\mathbf{e}^{opt})\) & \(J(\mathbf{e}^{opt})\)'
-    )
-    print('\t\t' r'\\ \hline')
+        print(f'%same solutions different Je 2 layer full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}')
+        print(r'\begin{table}[H]')
 
-    for emin, ips in ips_dict_list[-1].items():
+        caption = \
+            tr_d['full cloaking'] + \
+            ', '.join((
+                fr'\( a = 0.01 \)',
+                fr'\( b = 0.05 \)',
+                r'\( M = 2 \)',
+                fr'\( R_{{M+1}} = {RMp1} \)',
+                r'\( \varepsilon_{min}^n = 10^{-n} \)',
+                r'\( n = \overline{1,10} \)',
+                r'\( \varepsilon_{max} = 10\)'
+            ))
+        print('\t' fr'\caption{{{caption}}}')  # todo label
+
+        print(r'\resizebox{\textwidth}{!}{%')  # ебашит пиздатый размер таблицы
+
+        print('\t' r'\begin{tabular}{ | c | c | c | c | c | c | c | }')
+        print('\t\t' r'\hline')
+
         print(
             '\t\t'
-            r'\({}\) & '.format(ips.optimum_shell[0]) +
-            r'\({} \times 10^{{{}}}\) & '.format(*frexp10(ips.optimum_shell[-1])) +
-            ' & '.join(
-                r'\(0.0\)' if i == 0 else r'\({:1.4} \times 10^{{{}}}\)'.format(*frexp10(i))
-                for i in ips.functionals.values()
-            )
+            r'\(\varepsilon_{min}\) & \(\varepsilon_{max}\) & '
+            r'\(\varepsilon_1^{opt}\) & \(\varepsilon_2^{opt}\) & '
+            r'\(J_i(\mathbf{e}^{opt})\) & \(J_e(\mathbf{e}^{opt})\) & \(J(\mathbf{e}^{opt})\)'
         )
         print('\t\t' r'\\ \hline')
 
-    print('\t' r'\end{tabular}')
-    print(r'\end{table}')
+        for emin, ips in ips_dict_list[-1].items():
+            print(
+                '\t\t' +
+                r'\( 10^{{{}}} \) & '.format(frexp10(emin)[1]) +
+                r'\(10.0\) &' +
+                # r'\( {:.1f} \times 10^{{{}}} \) & '.format(*frexp10(ips.optimum_shell[0])) +
+                r'\( 10^{{{}}} \) & '.format(frexp10(ips.optimum_shell[0])[1]) +
+                r'\( {:.17f} \) & '.format(*frexp10(ips.optimum_shell[1])) +
+                ' & '.join(
+                    r'\(0.0\)' if i == 0 else r'\({:.3f} \times 10^{{{}}}\)'.format(*frexp10(i))
+                    for i in ips.functionals.values()
+                )
+            )
+            print('\t\t' r'\\ \hline')
+
+        print('\t' r'\end{tabular}')
+
+        print('}')  # ебашит пиздатый размер таблицы
+
+        print(r'\end{table}')
+
+        print('%' + '=' * 100)
 
 
 def print_1_parameter_tables():
@@ -203,4 +224,5 @@ def print_multi_parameter_tables():
                 print('%' + '=' * 100)
 
 
-print_multi_parameter_tables()
+if __name__ == '__main__':
+    print_2_layer_tables()
