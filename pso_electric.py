@@ -258,10 +258,52 @@ def get_individual_problem_solution(w, c1, c2, rng):
 
 
 def get_2_layer_full_cloaking_RMp1_dependence_plot():
-    for RMp1 in 0.07, 0.1, 0.15, 0.3, 0.6:
-        ...
+    import matplotlib.pyplot as pp
 
+    def f(x):
+        return np.sqrt(np.log(x / 0.05) / (x ** 4 - 0.05 ** 4))
+
+    inverse_problem_solution_dict_list = []
+    x_list, y_list = [], []
+
+    for RMp1, marker in zip((0.07, 0.1, 0.15, 0.3, 0.6), ('o', '^', 's', '+', 'x')):
+        with open(
+                'same solutions different Je 2 layer full cloaking\\' +
+                f'same solutions different Je full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle',
+                'rb'
+        ) as file:
+            inverse_problem_solution_dict_list.append(pickle.load(file))
+
+        x, y = [], []
+        for e_min, ips in inverse_problem_solution_dict_list[-1].items():
+            x.append(np.log10(e_min))
+            y.append(ips.functionals['external cloaking'])
+
+        x_list.append(np.array(x))
+        y_list.append(np.array(y))
+
+        pp.scatter(x_list[-1], y_list[0] / y_list[-1], marker=marker, label=fr'$R_{{M+1}}={RMp1}$')
+
+        asymptote = f(0.07) / f(RMp1)
+        pp.hlines(asymptote, x_list[-1].min(), x_list[-1].max())
+
+    # pp.title(
+    #     r'$ f(x, y) = \frac'
+    #     r'{J_{e, R_{M+1} = 0.07, \varepsilon_{min} = x} (e^{opt})}'
+    #     r'{J_{e, R_{M+1} = y, \varepsilon_{min} = x} (e^{opt})}$'
+    # )
+    pp.title(
+        r'$ f(x, y) = \frac'
+        r'{J_{e_{R_{M+1} = 0.07, \varepsilon_{min} = x}} (e^{opt})}'
+        r'{J_{e_{R_{M+1} = y, \varepsilon_{min} = x}} (e^{opt})}$',
+        fontsize=30
+    )
+    pp.xlabel(r'$\lg \varepsilon_{min}$')
+    pp.ylabel('$f(x,y)$')
+    pp.legend()
+    pp.show()
 
 
 if __name__ == '__main__':
-    SAME_get_2_layer_full_cloaking_problem_solutions(0.5, 1, 1.5, np.random.default_rng())
+    # SAME_get_2_layer_full_cloaking_problem_solutions(0.5, 1, 1.5, np.random.default_rng())
+    get_2_layer_full_cloaking_RMp1_dependence_plot()
