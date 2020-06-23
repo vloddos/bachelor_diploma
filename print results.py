@@ -20,15 +20,20 @@ tr_d = {
 }
 ips_dict_list = []
 
+s = set()  # fordebug
+
 
 def print_2_layer_tables():
-    # for RMp1 in 0.07, 0.1, 0.15, 0.3, 0.6:
-    for RMp1 in 0.07, 0.15, 0.3, 0.6:
-        # with open(fr'2 layer full cloaking\full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle', 'rb') as f:
-        with open(fr'SAME full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle', 'rb') as f:
+    for RMp1 in 0.07, 0.1, 0.15, 0.3, 0.6:
+        with open(
+                fr'same solutions different Je 2 layer full cloaking\same solutions different Je full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle',
+                'rb') as f:
+            # with open(fr'updated 2 layer full cloaking\updated full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle',
+            #           'rb') as f:
             ips_dict_list.append(pickle.load(f))
 
         print(f'%same solutions different Je 2 layer full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}')
+        # print(f'%different solutions different Je 2 layer full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}')
         print(r'\begin{table}[H]')
 
         caption = \
@@ -40,7 +45,7 @@ def print_2_layer_tables():
                 fr'\( R_{{M+1}} = {RMp1} \)',
                 r'\( \varepsilon_{min}^n = 10^{-n} \)',
                 r'\( n = \overline{1,10} \)',
-                r'\( \varepsilon_{max} = 10\)'
+                r'\( \varepsilon_{max} = 3\)'
             ))
         print('\t' fr'\caption{{{caption}}}')  # todo label
 
@@ -61,16 +66,17 @@ def print_2_layer_tables():
             print(
                 '\t\t' +
                 r'\( 10^{{{}}} \) & '.format(frexp10(emin)[1]) +
-                r'\(10.0\) &' +
+                r'\(3.0\) &' +
                 # r'\( {:.1f} \times 10^{{{}}} \) & '.format(*frexp10(ips.optimum_shell[0])) +
                 r'\( 10^{{{}}} \) & '.format(frexp10(ips.optimum_shell[0])[1]) +
-                r'\( {:.15f} \) & '.format(*frexp10(ips.optimum_shell[1])) +
+                r'\( {:.16f} \) & '.format(*frexp10(ips.optimum_shell[1])) +
                 ' & '.join(
                     r'\(0.0\)' if i == 0 else r'\({:.3f} \times 10^{{{}}}\)'.format(*frexp10(i))
                     for i in ips.functionals.values()
                 )
             )
             print('\t\t' r'\\ \hline')
+            s.add(r'{:.16f}'.format(*frexp10(ips.optimum_shell[1])))  # fordebug
 
         print('\t' r'\end{tabular}')
 
@@ -83,13 +89,14 @@ def print_2_layer_tables():
 
 def print_1_parameter_tables():
     # for problem in 'shielding', 'external cloaking', 'full cloaking':
-    for problem in 'external cloaking', 'full cloaking':
+    for problem in ('shielding',):
         for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
             for b_up in 40, 70:
-                with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'rb') as f:
+                # with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'rb') as f:
+                with open(fr'1 parameter\1 parameter {problem} a={a} b={b} b_up={b_up}.pickle', 'rb') as f:
                     ips_dict_list.append(pickle.load(f))
 
-                print(f'% {problem} a={a} b={b} b_up={b_up}')
+                print(f'% 1 parameter {problem} a={a} b={b} b_up={b_up}')
                 print(r'\begin{table}[H]')
                 caption = \
                     tr_d[problem] + \
@@ -101,30 +108,40 @@ def print_1_parameter_tables():
                         fr'\( \varepsilon_{{max}} / \varepsilon_{{min}} \approx {int(np.ceil(b_up / 0.0045))} \)'
                     ))
                 print('\t' fr'\caption{{{caption}}}')  # todo label
+
+                # print(r'\resizebox{\textwidth}{!}{%')  # ебашит пиздатый размер таблицы
+                print(r'\centering')
+
                 print('\t' r'\begin{tabular}{ | c | c | c | c | c | c | }')
                 print('\t\t' r'\hline')
+
                 print(
                     '\t\t'
-                    r'\(M\) & \(\varepsilon_1^{opt}\) & \(\varepsilon_M^{opt}\) & \(J_i(\mathbf{e}^{opt})\) & \(J_e(\mathbf{e}^{opt})\) & \(J(\mathbf{e}^{opt})\)'
+                    r'\(M\) & \(\varepsilon_1^{opt}\) & \(\varepsilon_M^{opt}\) & '
+                    r'\(J_i(\mathbf{e}^{opt})\) & \(J_e(\mathbf{e}^{opt})\) & \(J(\mathbf{e}^{opt})\)'
                 )
                 print('\t\t' r'\\ \hline')
 
                 for ipp, ips in ips_dict_list[-1].items():
                     print(
-                        '\t\t'
-                        r'{} & \({:1.7}\) & '.format(
+                        '\t\t' +
+                        r'{} & \({}\) & '.format(  # r'{} & \({:1.7}\) & '.format(
                             ipp.shell_size,
                             ips.optimum_shell[0]
                         ) +
-                        r'\({:1.7} \times 10^{{{}}}\) & '.format(*frexp10(ips.optimum_shell[-1])) +
+                        # r'\({:.16f} \times 10^{{{}}}\) & '.format(*frexp10(ips.optimum_shell[-1])) +
+                        r'\({}\) & '.format(ips.optimum_shell[-1]) +
                         ' & '.join(
-                            r'\(0.0\)' if i == 0 else r'\({:1.4} \times 10^{{{}}}\)'.format(*frexp10(i))
+                            r'\(0.0\)' if i == 0 else r'\({:.3f} \times 10^{{{}}}\)'.format(*frexp10(i))
                             for i in ips.functionals.values()
                         )
                     )
                     print('\t\t' r'\\ \hline')
 
                 print('\t' r'\end{tabular}')
+
+                # print('}')  # ебашит пиздатый размер таблицы
+
                 print(r'\end{table}')
 
                 print('%' + '=' * 100)
@@ -225,4 +242,4 @@ def print_multi_parameter_tables():
 
 
 if __name__ == '__main__':
-    print_2_layer_tables()
+    print_1_parameter_tables()

@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 from scipy.sparse import diags
+import matplotlib.pyplot as pp
 
 InverseProblemParameters = namedtuple(
     'InverseProblemParameters',
@@ -86,15 +87,22 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
             return np.apply_along_axis(f, 1, v)
 
     b_diff = b_up - b_lo
-    # delta = (b_up - b_lo) / 100
-    delta = 1
+    if 1 / (b_up - b_lo) < 0.2:
+        delta = 1
+    else:  # elif 1 / (b_up - b_lo) <= 1:
+        delta = 10 ** np.log10([
+            -b_lo + 0.1 * (b_lo + b_up) / 2,
+            b_up - 1.9 * (b_lo + b_up) / 2
+        ]).min()
+    # print('delta', delta)  # fordebug
+
     t = b_lo, b_up - delta
     x = np.pad(
         np.tile([t, t[::-1]], (swarm_size // 2, particle_size // 2)),
         ((0, swarm_size % 2), (0, particle_size % 2)),
         'reflect'
     ) + delta * rng.random((swarm_size, particle_size))  # tocheck even/odd reflect type
-    # print(x)
+    # print(x)  # fordebug
 
     p = x.copy()
     Fp = F(p)
@@ -103,19 +111,19 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
     g = p[imin].copy()
     Fg = Fp[imin]
 
-    v_min, v_max = -b_diff, b_diff
+    # v_min, v_max = -b_diff, b_diff  # tocheck убрать??? fordebug
     # v_min, v_max = -b_diff/1000, b_diff/1000
     # v = (v_max - v_min) * rng.random((swarm_size, particle_size)) + v_min  # у алекса zeros
-    v = np.zeros((swarm_size, particle_size))  # tocheck
+    v = np.zeros((swarm_size, particle_size))
     # v = 2 * b_diff * rng.random((swarm_size, particle_size)) - b_diff  # init???
-    # x v beyond boundaries???
+    # v beyond boundaries???
 
     for i in range(iter_num):
         rp, rg = rng.random(2)
 
         v = w * v + c1 * rp * (p - x) + c2 * rg * (g - x)  # g-vector minus x-matrix works correctly
-        v[v < v_min] = v_min
-        v[v > v_max] = v_max
+        # v[v < v_min] = v_min  # fordebug
+        # v[v > v_max] = v_max  # fordebug
 
         x += v
         x[x < b_lo] = b_lo
@@ -215,14 +223,19 @@ def get_multi_layer_all_problems_solutions(w, c1, c2, rng):
     print('BEGIN TIME = ', time.asctime())
 
     for problem in 'shielding', 'external cloaking', 'full cloaking':
-        for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
-            for b_up in 40, 70:
+    # for problem in 'full cloaking',:
+        print(problem)
+
+        for a, b in (0.03, 0.05),:
+            for b_lo, b_up in (0.01, 2.25), (0.01, 8), (0.01, 86):
+                print(b_lo, b_up)
+
                 inverse_problem_solution_dict = {}
                 for M in range(2, 18, 2):
                     ipp = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem)
                     for i in range(20):
                         ips_new = solve_inverse_problem(
-                            *ipp, 0, 100, 40, 0.0045, b_up, w, c1, c2, rng
+                            *ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng
                         )
                         ips_old = inverse_problem_solution_dict.get(ipp)
 
@@ -232,11 +245,14 @@ def get_multi_layer_all_problems_solutions(w, c1, c2, rng):
                                  np.array(tuple(ips_old.functionals.values()))).all():
                             inverse_problem_solution_dict[ipp] = ips_new
 
-                print(inverse_problem_solution_dict)
+                    print(ipp)
+                    print(inverse_problem_solution_dict[ipp])
+                    print('-' * 80)
+
                 print('=' * 100)
                 print('TIME = ', time.asctime())
 
-                with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'wb') as f:
+                with open(f'{problem} a={a} b={b} b_lo={b_lo} b_up={b_up}.pickle', 'wb') as f:
                     pickle.dump(inverse_problem_solution_dict, f)
 
     print('END TIME = ', time.asctime())
@@ -249,7 +265,7 @@ def get_individual_problem_solution(w, c1, c2, rng):
         print(i)
         solution_list.append(
             solve_inverse_problem(
-                1, 1, 1, 0.01, 0.05, 2, 0.6, 'full cloaking', 0, 100, 20, 1e-1, 3, w, c1, c2, rng
+                1, 1, 1, 0.03, 0.05, 8, 0.1, 'full cloaking', 0, 100, 40, 0.01, 86, w, c1, c2, rng
             )
         )
         print(solution_list[-1])
@@ -259,16 +275,15 @@ def get_individual_problem_solution(w, c1, c2, rng):
     imin = np.argmin(np.array(J_list))
     print('imin=', imin)
 
-    with open(fr'updated 2 layer full cloaking\fc M=2 a=0.01 b=0.05 RMp1=0.6 emin=0.01 imin={imin}.pickle', 'wb') as f:
-        pickle.dump(solution_list, f)
+    # with open(fr'updated 2 layer full cloaking\fc M=2 a=0.01 b=0.05 RMp1=0.07 emin=1e-10 imin={imin}.pickle', 'wb') as f:
+    #     pickle.dump(solution_list, f)
+
+
+def J_e_sqrt_part(x):
+    return np.sqrt(np.log(x / 0.05) / (x ** 4 - 0.05 ** 4))
 
 
 def get_2_layer_full_cloaking_RMp1_dependence_plot():
-    import matplotlib.pyplot as pp
-
-    def f(x):
-        return np.sqrt(np.log(x / 0.05) / (x ** 4 - 0.05 ** 4))
-
     inverse_problem_solution_dict_list = []
     x_list, y_list = [], []
 
@@ -293,29 +308,43 @@ def get_2_layer_full_cloaking_RMp1_dependence_plot():
         x_list.append(np.array(x))
         y_list.append(np.array(y))
 
-        print(y_list[0] / y_list[-1])  # fordebug
-        fxy = np.nan_to_num(y_list[0] / y_list[-1], nan=1)
-        pp.scatter(x_list[-1], fxy, marker=marker, label=fr'$R_{{M+1}}={RMp1}$')
+        pp.scatter(x_list[-1], y_list[0] / y_list[-1], s=100, marker=marker, label=fr'$R_{{M+1}}={RMp1}$')
 
-        asymptote = f(0.07) / f(RMp1)
+        asymptote = J_e_sqrt_part(0.07) / J_e_sqrt_part(RMp1)
         pp.hlines(asymptote, x_list[-1].min(), x_list[-1].max())
 
-    # мб лучше убрать титл и написать только в техе вместе с одз
-    # pp.title(
-    #     r'$ f(x, y) = \frac'
-    #     r'{J_{e_{R_{M+1} = 0.07, \varepsilon_{min} = x}} (\mathbf{e}^{opt})}'
-    #     r'{J_{e_{R_{M+1} = y, \varepsilon_{min} = x}} (\mathbf{e}^{opt})}$',
-    #     fontsize=30
-    # )
     pp.xlabel(r'$\lg \varepsilon_{min}$', fontsize=30)
+    pp.xticks(fontsize=30)
+
     pp.ylabel('$f(x,y)$', fontsize=30)
-    pp.legend()
+    pp.yticks(fontsize=30)
+
+    pp.legend(fontsize=30)
+
+    pp.show()
+
+
+def get_J_e_sqrt_part_plot():
+    x = np.array([0.07, 0.1, 0.15, 0.3, 0.6])
+
+    pp.plot(x, J_e_sqrt_part(x), label='$y(x)$')
+
+    pp.xlabel('x', fontsize=30)
+    pp.xticks(fontsize=30)
+
+    pp.ylabel('y', fontsize=30)
+    pp.yticks(fontsize=30)
+
+    pp.legend(fontsize=30)
+
     pp.show()
 
 
 if __name__ == '__main__':
-    # w, c1, c2 = 0.5, 1, 1.5
-    # rng = np.random.default_rng()
+    w, c1, c2 = 0.5, 1, 1.5
+    rng = np.random.default_rng()
+    get_multi_layer_all_problems_solutions(w, c1, c2, rng) #tocheck x delta 0.01 8 0.01 86
     # SAME_get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng)
-    get_2_layer_full_cloaking_RMp1_dependence_plot()
+    # get_2_layer_full_cloaking_RMp1_dependence_plot()
     # get_individual_problem_solution(w, c1, c2, rng)
+    # get_J_e_sqrt_part_plot()
