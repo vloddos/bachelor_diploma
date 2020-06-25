@@ -79,7 +79,7 @@ def get_solver_and_functional(Ea, ei, ee, a, b, shell_size, RMp1, problem):  # s
 # todo type annotations
 # totry to use python 3.8 with := anywhere
 # totry to use coconut python
-def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng):
+def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng, one_parameter):
     def F(v):
         if v.ndim == 1:
             return f(v)
@@ -96,12 +96,20 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
         ]).min()
     # print('delta', delta)  # fordebug
 
-    t = b_lo, b_up - delta
-    x = np.pad(
-        np.tile([t, t[::-1]], (swarm_size // 2, particle_size // 2)),
-        ((0, swarm_size % 2), (0, particle_size % 2)),
-        'reflect'
-    ) + delta * rng.random((swarm_size, particle_size))  # tocheck even/odd reflect type
+    if one_parameter:  # это лютый говнокод
+        x = np.pad(
+            np.tile((b_up, b_lo), (swarm_size, particle_size // 2)),  # тут захардкоженная схема
+            ((0, 0), (0, particle_size % 2)),
+            'reflect'
+        )
+        x[:, -1] = (b_up - b_lo) * rng.random(swarm_size) + b_lo
+    else:
+        t = b_lo, b_up - delta
+        x = np.pad(
+            np.tile([t, t[::-1]], (swarm_size // 2, particle_size // 2)),
+            ((0, swarm_size % 2), (0, particle_size % 2)),
+            'reflect'
+        ) + delta * rng.random((swarm_size, particle_size))  # tocheck even/odd reflect type
     # print(x)  # fordebug
 
     p = x.copy()
@@ -147,14 +155,14 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng)
 
 def solve_inverse_problem(
         Ea, ei, ee, a, b, shell_size, RMp1, problem,
-        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng
+        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng, one_parameter=False
 ):
     solve_direct_problem, calculate_functionals, calculate_problem_functional = \
         get_solver_and_functional(Ea, ei, ee, a, b, shell_size, RMp1, problem)
 
     g = PSO(
         calculate_problem_functional,
-        eps, iter_num, swarm_size, shell_size, b_lo, b_up, w, c1, c2, rng
+        eps, iter_num, swarm_size, shell_size, b_lo, b_up, w, c1, c2, rng, one_parameter
     )
 
     A, B = solve_direct_problem(g)
@@ -219,11 +227,11 @@ def get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
     print('END TIME = ', time.asctime())
 
 
-def get_multi_layer_all_problems_solutions(w, c1, c2, rng):
+def get_multi_layer_multi_parameter_problems_solutions(w, c1, c2, rng):
     print('BEGIN TIME = ', time.asctime())
 
     for problem in 'shielding', 'external cloaking', 'full cloaking':
-    # for problem in 'full cloaking',:
+        # for problem in 'full cloaking',:
         print(problem)
 
         for a, b in (0.03, 0.05),:
@@ -236,6 +244,44 @@ def get_multi_layer_all_problems_solutions(w, c1, c2, rng):
                     for i in range(20):
                         ips_new = solve_inverse_problem(
                             *ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng
+                        )
+                        ips_old = inverse_problem_solution_dict.get(ipp)
+
+                        if ips_old is None or \
+                                ips_new.functionals[ipp.problem] < ips_old.functionals[ipp.problem] or \
+                                (np.array(tuple(ips_new.functionals.values())) <=
+                                 np.array(tuple(ips_old.functionals.values()))).all():
+                            inverse_problem_solution_dict[ipp] = ips_new
+
+                    print(ipp)
+                    print(inverse_problem_solution_dict[ipp])
+                    print('-' * 80)
+
+                print('=' * 100)
+                print('TIME = ', time.asctime())
+
+                with open(f'{problem} a={a} b={b} b_lo={b_lo} b_up={b_up}.pickle', 'wb') as f:
+                    pickle.dump(inverse_problem_solution_dict, f)
+
+    print('END TIME = ', time.asctime())
+
+
+def get_multi_layer_one_parameter_problems_solutions(w, c1, c2, rng):
+    print('BEGIN TIME = ', time.asctime())
+
+    for problem in 'shielding', 'external cloaking', 'full cloaking':
+        print(problem)
+
+        for a, b in (0.03, 0.05),:
+            for b_lo, b_up in (0.01, 2.25), (0.01, 8), (0.01, 86):
+                print(b_lo, b_up)
+
+                inverse_problem_solution_dict = {}
+                for M in range(2, 18, 2):
+                    ipp = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem)
+                    for i in range(20):
+                        ips_new = solve_inverse_problem(
+                            *ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng, True
                         )
                         ips_old = inverse_problem_solution_dict.get(ipp)
 
@@ -343,7 +389,8 @@ def get_J_e_sqrt_part_plot():
 if __name__ == '__main__':
     w, c1, c2 = 0.5, 1, 1.5
     rng = np.random.default_rng()
-    get_multi_layer_all_problems_solutions(w, c1, c2, rng) #tocheck x delta 0.01 8 0.01 86
+    # get_multi_layer_multi_parameter_problems_solutions(w, c1, c2, rng)  # tocheck x delta 0.01 8 0.01 86
+    get_multi_layer_one_parameter_problems_solutions(w, c1, c2, rng)
     # SAME_get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng)
     # get_2_layer_full_cloaking_RMp1_dependence_plot()
     # get_individual_problem_solution(w, c1, c2, rng)
