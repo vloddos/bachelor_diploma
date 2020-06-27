@@ -88,29 +88,37 @@ def print_2_layer_tables():
 
 
 def print_1_parameter_tables():
-    # for problem in 'shielding', 'external cloaking', 'full cloaking':
-    for problem in ('shielding',):
-        for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
-            for b_up in 40, 70:
-                # with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'rb') as f:
-                with open(fr'1 parameter\1 parameter {problem} a={a} b={b} b_up={b_up}.pickle', 'rb') as f:
+    for problem in 'shielding', 'external cloaking', 'full cloaking':
+        for a, b in (0.03, 0.05),:
+            for b_lo, b_up in (0.01, 2.25), (0.01, 8), (0.01, 86):
+                with open(
+                        '1 parameter 1 scheme a=0.03 b=0.05 b_lo=0.01 b_up=2.25,8,86\\'
+                        f'{problem} a={a} b={b} b_lo={b_lo} b_up={b_up}.pickle',
+                        'rb'
+                ) as f:
                     ips_dict_list.append(pickle.load(f))
 
-                print(f'% 1 parameter {problem} a={a} b={b} b_up={b_up}')
+                print(f'% 1 parametric 1 scheme {problem} a={a} b={b} b_lo={b_lo} b_up={b_up}')
                 print(r'\begin{table}[H]')
+
                 caption = \
                     tr_d[problem] + \
                     ', '.join((
                         fr'\( a = {a} \)',
                         fr'\( b = {b} \)',
-                        r'\( \varepsilon_{min} = 0.0045 \)',
+                        fr'\( \varepsilon_{{min}} = {b_lo} \)',
                         fr'\( \varepsilon_{{max}} = {b_up} \)',
-                        fr'\( \varepsilon_{{max}} / \varepsilon_{{min}} \approx {int(np.ceil(b_up / 0.0045))} \)'
+                        fr'\( \varepsilon_{{max}} / \varepsilon_{{min}} = {int(b_up / b_lo)} \)'
                     ))
-                print('\t' fr'\caption{{{caption}}}')  # todo label
+                print('\t' fr'\caption{{{caption}}}')
 
-                # print(r'\resizebox{\textwidth}{!}{%')  # ебашит пиздатый размер таблицы
-                print(r'\centering')
+                label = f'tab:one_parametric_1_scheme_{problem}_a_{a}_b_{b}_b_lo_{b_lo}_b_up_{b_up}' \
+                    .replace(' ', '_') \
+                    .replace('.', '')
+                print('\t' fr'\label{{{label}}}')
+
+                print(r'\resizebox{\textwidth}{!}{%')  # ебашит пиздатый размер таблицы
+                # print(r'\centering')
 
                 print('\t' r'\begin{tabular}{ | c | c | c | c | c | c | }')
                 print('\t\t' r'\hline')
@@ -129,8 +137,8 @@ def print_1_parameter_tables():
                             ipp.shell_size,
                             ips.optimum_shell[0]
                         ) +
-                        # r'\({:.16f} \times 10^{{{}}}\) & '.format(*frexp10(ips.optimum_shell[-1])) +
-                        r'\({}\) & '.format(ips.optimum_shell[-1]) +
+                        r'\({:.16f} \times 10^{{{}}}\) & '.format(*frexp10(ips.optimum_shell[-1])) +
+                        # r'\({}\) & '.format(ips.optimum_shell[-1]) +
                         ' & '.join(
                             r'\(0.0\)' if i == 0 else r'\({:.3f} \times 10^{{{}}}\)'.format(*frexp10(i))
                             for i in ips.functionals.values()
@@ -140,7 +148,7 @@ def print_1_parameter_tables():
 
                 print('\t' r'\end{tabular}')
 
-                # print('}')  # ебашит пиздатый размер таблицы
+                print('}')  # ебашит пиздатый размер таблицы
 
                 print(r'\end{table}')
 
@@ -158,27 +166,34 @@ def print_results():
 
 
 def print_multi_parameter_tables():
-    # for problem in 'external cloaking', 'full cloaking':
-    for problem in ('shielding',):
-        # for a, b in (0.01, 0.05), (0.03, 0.05), (0.04, 0.05):
-        for a, b in ((0.01, 0.05),):
-            for b_up in 40, 70:
-                # with open(f'{problem} a={a} b={b} b_up={b_up}.pickle', 'rb') as f:
-                with open(fr'1 parameter\1 parameter {problem} a={a} b={b} b_up={b_up}.pickle', 'rb') as f:
+    for problem in 'shielding', 'external cloaking', 'full cloaking':
+        for a, b in ((0.03, 0.05),):
+            for b_lo, b_up in (0.01, 2.25), (0.01, 8), (0.01, 86):
+                with open(
+                        'multi parameter a=0.03 b=0.05 b_lo=0.01 b_up=2.25,8,86 v2\\'
+                        f'{problem} a={a} b={b} b_lo={b_lo} b_up={b_up}.pickle',
+                        'rb'
+                ) as f:
                     ips_dict_list.append(pickle.load(f))
 
-                print(f'% multi parameter {problem} a={a} b={b} b_up={b_up}')
+                print(f'% multi parametric {problem} a={a} b={b} b_lo={b_lo} b_up={b_up}')
                 print(r'\begin{table}[H]')
+
                 caption = \
                     tr_d[problem] + \
                     ', '.join((
                         fr'\( a = {a} \)',
                         fr'\( b = {b} \)',
-                        r'\( \varepsilon_{min} = 0.0045 \)',
+                        fr'\( \varepsilon_{{min}} = {b_lo} \)',
                         fr'\( \varepsilon_{{max}} = {b_up} \)',
-                        fr'\( \varepsilon_{{max}} / \varepsilon_{{min}} \approx {int(np.ceil(b_up / 0.0045))} \)'
+                        fr'\( \varepsilon_{{max}} / \varepsilon_{{min}} = {int(b_up / b_lo)} \)'
                     ))
-                print('\t' fr'\caption{{{caption}}}')  # todo label
+                print('\t' fr'\caption{{{caption}}}')
+
+                label = f'tab:multi_parametric_{problem}_a_{a}_b_{b}_b_lo_{b_lo}_b_up_{b_up}' \
+                    .replace(' ', '_') \
+                    .replace('.', '')
+                print('\t' fr'\label{{{label}}}')
 
                 print(r'\resizebox{\textwidth}{!}{%')  # ебашит пиздатый размер таблицы
 
@@ -243,3 +258,4 @@ def print_multi_parameter_tables():
 
 if __name__ == '__main__':
     print_1_parameter_tables()
+    # print_multi_parameter_tables()

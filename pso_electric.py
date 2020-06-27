@@ -329,7 +329,7 @@ def J_e_sqrt_part(x):
     return np.sqrt(np.log(x / 0.05) / (x ** 4 - 0.05 ** 4))
 
 
-def get_2_layer_full_cloaking_RMp1_dependence_plot():
+def show_2_layer_full_cloaking_RMp1_dependence_plot():
     inverse_problem_solution_dict_list = []
     x_list, y_list = [], []
 
@@ -354,7 +354,7 @@ def get_2_layer_full_cloaking_RMp1_dependence_plot():
         x_list.append(np.array(x))
         y_list.append(np.array(y))
 
-        pp.scatter(x_list[-1], y_list[0] / y_list[-1], s=100, marker=marker, label=fr'$R_{{M+1}}={RMp1}$')
+        pp.scatter(x_list[-1], y_list[0] / y_list[-1], s=100, marker=marker, label=f'$R_{{M+1}}={RMp1}$')
 
         asymptote = J_e_sqrt_part(0.07) / J_e_sqrt_part(RMp1)
         pp.hlines(asymptote, x_list[-1].min(), x_list[-1].max())
@@ -370,7 +370,7 @@ def get_2_layer_full_cloaking_RMp1_dependence_plot():
     pp.show()
 
 
-def get_J_e_sqrt_part_plot():
+def show_J_e_sqrt_part_plot():
     x = np.array([0.07, 0.1, 0.15, 0.3, 0.6])
 
     pp.plot(x, J_e_sqrt_part(x), label='$y(x)$')
@@ -386,12 +386,145 @@ def get_J_e_sqrt_part_plot():
     pp.show()
 
 
+# def show_multi_layer_triple_plots():
+#     ips_dict_list = []
+#     RMp1_tuple = 0.07, 0.1, 0.15, 0.3, 0.6
+#     functional_names = 'J_i', 'J_e', 'J'
+#     # colors = 'red', 'orange', 'yellow', 'green', 'blue'  # tocheck
+#     linestyles = '-', '--', ':'  # Ji Je J
+#
+#     for RMp1 in RMp1_tuple:
+#         with open(
+#                 'updated 2 layer full cloaking\\'
+#                 f'updated full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle',
+#                 'rb'
+#         ) as f:
+#             ips_dict_list.append(pickle.load(f))
+#
+#     for ips_dict, RMp1, color in zip(ips_dict_list, RMp1_tuple, colors):
+#         x = np.array([ipp.shell_size for ipp in ips_dict.keys()])
+#         y_array = np.array([[*ips.functionals.values()] for ips in ips_dict.values()]).T  # Ji Je J
+#         for y, linestyle, functional_name in zip(y_array, linestyles, functional_names):
+#             pp.plot(
+#                 x, y,
+#                 linestyle=linestyle, color=color,
+#                 label=f'${functional_name}; R_{{M+1}}={RMp1}$'
+#             )
+#         # print(x)  # fordebug
+#
+#     pp.xlabel('$M$', fontsize=20)
+#     pp.xticks(fontsize=20)
+#
+#     pp.ylabel(f"${';'.join(functional_names)}$", fontsize=20)
+#     pp.yticks(fontsize=20)
+#
+#     pp.legend(fontsize=20)
+#
+#     pp.show()
+
+
+def show_multi_layer_plots():
+    functional_names = 'J_i', 'J_e', 'J'
+    colors = 'red', 'orange', 'yellow', 'green', 'blue', 'black'
+    linestyles = '-', '--', ':'  # Ji Je J
+
+    # for problem in 'shielding', 'external cloaking', 'full cloaking':
+    for problem in 'external cloaking', 'full cloaking':
+        colors_it = iter(colors)
+
+        pp.figure()
+
+        for a in 0.01, 0.03, 0.04:
+            for b_up in 40, 70:
+                # with open(
+                #         'multi parameter a=0.01,0.03,0.04 b=0.05 b_lo=0.0045 b_up=40,70\\'
+                #         f'{problem} a={a} b=0.05 b_up={b_up}.pickle',
+                #         'rb'
+                # ) as f:
+                with open(
+                        '1 parameter\\'
+                        f'1 parameter {problem} a={a} b=0.05 b_up={b_up}.pickle',
+                        'rb'
+                ) as f:
+                    ips_dict = pickle.load(f)
+
+                x = np.array([ipp.shell_size for ipp in ips_dict.keys()])
+                y_array = np.array([[*ips.functionals.values()] for ips in ips_dict.values()]).T  # Ji Je J
+
+                color = next(colors_it)
+
+                for y, linestyle, functional_name in zip(y_array, linestyles, functional_names):
+                    pp.plot(
+                        x, y,
+                        linestyle=linestyle, color=color,
+                        label=fr'${functional_name}; a={a}; \varepsilon_{{max}}={b_up}$'
+                    )
+
+        pp.title(problem)  # fordebug
+
+        pp.xlabel('$M$', fontsize=20)
+        pp.xticks(np.arange(2, 18, 2), fontsize=20)
+
+        pp.ylabel('$' + r'\quad;\quad'.join(functional_names) + '$', fontsize=20)
+        pp.yticks(fontsize=20)
+        pp.yscale('log', basey=10)
+
+        pp.legend(fontsize=20)
+
+    pp.show()
+
+
+def show_2_layer_full_cloaking_plot():
+    ips_dict_list = []
+    RMp1_tuple = 0.07, 0.1, 0.15, 0.3, 0.6
+    functional_names = 'J_i', 'J_e', 'J'
+
+    colors = 'red', 'orange', 'yellow', 'green', 'blue'
+    linestyles = '-', '--', ':'  # Ji Je J
+
+    for RMp1 in RMp1_tuple:
+        with open(
+                'updated 2 layer full cloaking\\'
+                f'updated full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle',
+                'rb'
+        ) as f:
+            ips_dict_list.append(pickle.load(f))
+
+    for ips_dict, RMp1, color in zip(ips_dict_list, RMp1_tuple, colors):
+        x = np.array([*ips_dict.keys()])  # sorting???
+        # print(x)  # fordebug
+
+        y_array = np.array([[*ips.functionals.values()] for ips in ips_dict.values()]).T  # Ji Je J
+        for y, linestyle, functional_name in zip(y_array, linestyles, functional_names):
+            # if functional_name=='J_e':continue
+            pp.plot(
+                x, y,
+                linestyle=linestyle, color=color,
+                label=f'${functional_name}; R_{{M+1}}={RMp1}$'
+            )
+
+    pp.xlabel(r'$\varepsilon_{min}$', fontsize=20)
+    pp.xticks(fontsize=20)
+    pp.xscale('log', basex=10)
+
+    pp.ylabel('$' + r'\quad;\quad'.join(functional_names) + '$', fontsize=20)
+    pp.yticks(fontsize=20)
+    pp.yscale('log', basey=10)
+
+    pp.legend(fontsize=20)
+
+    pp.show()
+
+
 if __name__ == '__main__':
-    w, c1, c2 = 0.5, 1, 1.5
-    rng = np.random.default_rng()
+    # w, c1, c2 = 0.5, 1, 1.5
+    # rng = np.random.default_rng()
     # get_multi_layer_multi_parameter_problems_solutions(w, c1, c2, rng)  # tocheck x delta 0.01 8 0.01 86
-    get_multi_layer_one_parameter_problems_solutions(w, c1, c2, rng)
+    # get_multi_layer_one_parameter_problems_solutions(w, c1, c2, rng)
     # SAME_get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng)
     # get_2_layer_full_cloaking_RMp1_dependence_plot()
     # get_individual_problem_solution(w, c1, c2, rng)
     # get_J_e_sqrt_part_plot()
+
+    # show_2_layer_full_cloaking_plot()
+    show_multi_layer_plots()
