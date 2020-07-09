@@ -14,6 +14,14 @@ InverseProblemSolution = namedtuple(
     'InverseProblemSolution',
     ('optimum_shell', 'functionals')
 )
+InverseProblem = namedtuple(
+    'InverseProblem',
+    ('parameters', 'solution')
+)
+ProblemDesign = namedtuple(
+    'ProblemDesign',
+    ('one_parameter', 'scheme')  # layer???
+)
 
 
 def Ji(A0, Ea):
@@ -28,7 +36,10 @@ def J(A0, BMp1, Ea, RM, RMp1):
     return (Ji(A0, Ea) + Je(BMp1, Ea, RM, RMp1)) / 2
 
 
-def get_solver_and_functional(Ea, ei, ee, a, b, shell_size, RMp1, problem):  # shell_size M
+# def get_solver_and_functional(Ea, ei, ee, a, b, shell_size, RMp1, problem):  # shell_size M
+def get_solver_and_functional(inverse_problem_parameters):  # shell_size M
+    Ea, ei, ee, a, b, shell_size, RMp1, problem = inverse_problem_parameters
+
     if problem not in {'shielding', 'external cloaking', 'full cloaking'}:
         raise ValueError(f"unknown problem '{problem}'")
 
@@ -79,14 +90,14 @@ def get_solver_and_functional(Ea, ei, ee, a, b, shell_size, RMp1, problem):  # s
 # todo type annotations
 # totry to use python 3.8 with := anywhere
 # totry to use coconut python
-def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng, one_parameter):
+def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng, problem_design):
     def F(v):
         if v.ndim == 1:
             return f(v)
         elif v.ndim == 2:
             return np.apply_along_axis(f, 1, v)
 
-    b_diff = b_up - b_lo
+    # b_diff = b_up - b_lo
     if 1 / (b_up - b_lo) < 0.2:
         delta = 1
     else:  # elif 1 / (b_up - b_lo) <= 1:
@@ -96,9 +107,14 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng,
         ]).min()
     # print('delta', delta)  # fordebug
 
-    if one_parameter:  # это лютый говнокод
+    if problem_design.one_parameter:
+        if problem_design.scheme == 1:
+            t = b_lo, b_up
+        elif problem_design.scheme == 2:
+            t = b_up, b_lo
+
         x = np.pad(
-            np.tile((b_up, b_lo), (swarm_size, particle_size // 2)),  # тут захардкоженная схема
+            np.tile(t, (swarm_size, particle_size // 2)),
             ((0, 0), (0, particle_size % 2)),
             'reflect'
         )
@@ -154,42 +170,19 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng,
 
 
 def solve_inverse_problem(
-        Ea, ei, ee, a, b, shell_size, RMp1, problem,
-        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng, one_parameter=False
+        inverse_problem_parameters,
+        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng, problem_design
 ):
     solve_direct_problem, calculate_functionals, calculate_problem_functional = \
-        get_solver_and_functional(Ea, ei, ee, a, b, shell_size, RMp1, problem)
+        get_solver_and_functional(inverse_problem_parameters)
 
     g = PSO(
         calculate_problem_functional,
-        eps, iter_num, swarm_size, shell_size, b_lo, b_up, w, c1, c2, rng, one_parameter
+        eps, iter_num, swarm_size, inverse_problem_parameters.shell_size, b_lo, b_up, w, c1, c2, rng, problem_design
     )
 
     A, B = solve_direct_problem(g)
     return InverseProblemSolution(g, calculate_functionals(A[0], B[0]))
-
-
-def SAME_get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
-    with open(r'1 parameter\1 parameter full cloaking m=2.pickle', 'rb') as f:
-        inverse_problem_solution_dict = pickle.load(f)
-
-    for RMp1 in 0.07, 0.15, 0.3, 0.6:
-        print(f'RMp1={RMp1}')
-
-        for e_min, ips in inverse_problem_solution_dict.items():
-            inverse_problem_solution_dict[e_min] = solve_inverse_problem(
-                1, 1, 1, 0.01, 0.05, 2, RMp1, 'full cloaking', 0, 100, 20, e_min, 10, w, c1, c2, rng,
-                ips.optimum_shell
-            )
-
-            print(f'e_min={e_min}')
-            print(inverse_problem_solution_dict[e_min])
-            print('-' * 80)
-
-        print('=' * 100)
-
-        with open(f'SAME full cloaking M=2 a=0.01 b=0.05 RMp1={RMp1}.pickle', 'wb') as f:
-            pickle.dump(inverse_problem_solution_dict, f)
 
 
 def get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
@@ -227,79 +220,51 @@ def get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
     print('END TIME = ', time.asctime())
 
 
-def get_multi_layer_multi_parameter_problems_solutions(w, c1, c2, rng):
-    print('BEGIN TIME = ', time.asctime())
-
-    for problem in 'shielding', 'external cloaking', 'full cloaking':
-        # for problem in 'full cloaking',:
-        print(problem)
-
-        for a, b in (0.03, 0.05),:
-            for b_lo, b_up in (0.01, 2.25), (0.01, 8), (0.01, 86):
-                print(b_lo, b_up)
-
-                inverse_problem_solution_dict = {}
-                for M in range(2, 18, 2):
-                    ipp = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem)
-                    for i in range(20):
-                        ips_new = solve_inverse_problem(
-                            *ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng
-                        )
-                        ips_old = inverse_problem_solution_dict.get(ipp)
-
-                        if ips_old is None or \
-                                ips_new.functionals[ipp.problem] < ips_old.functionals[ipp.problem] or \
-                                (np.array(tuple(ips_new.functionals.values())) <=
-                                 np.array(tuple(ips_old.functionals.values()))).all():
-                            inverse_problem_solution_dict[ipp] = ips_new
-
-                    print(ipp)
-                    print(inverse_problem_solution_dict[ipp])
-                    print('-' * 80)
-
-                print('=' * 100)
-                print('TIME = ', time.asctime())
-
-                with open(f'{problem} a={a} b={b} b_lo={b_lo} b_up={b_up}.pickle', 'wb') as f:
-                    pickle.dump(inverse_problem_solution_dict, f)
-
-    print('END TIME = ', time.asctime())
-
-
-def get_multi_layer_one_parameter_problems_solutions(w, c1, c2, rng):
+def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pairs, w, c1, c2, rng):
     print('BEGIN TIME = ', time.asctime())
 
     for problem in 'shielding', 'external cloaking', 'full cloaking':
         print(problem)
 
-        for a, b in (0.03, 0.05),:
-            for b_lo, b_up in (0.01, 2.25), (0.01, 8), (0.01, 86):
+        for a, b in a_b_pairs:
+            print(a, b)
+
+            for b_lo, b_up in b_lo_b_up_pairs:
                 print(b_lo, b_up)
 
-                inverse_problem_solution_dict = {}
                 for M in range(2, 18, 2):
-                    ipp = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem)
-                    for i in range(20):
-                        ips_new = solve_inverse_problem(
-                            *ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng, True
-                        )
-                        ips_old = inverse_problem_solution_dict.get(ipp)
+                    ipp, ips_min = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem), None
 
-                        if ips_old is None or \
-                                ips_new.functionals[ipp.problem] < ips_old.functionals[ipp.problem] or \
-                                (np.array(tuple(ips_new.functionals.values())) <=
-                                 np.array(tuple(ips_old.functionals.values()))).all():
-                            inverse_problem_solution_dict[ipp] = ips_new
+                    for i in range(20):
+                        ips = solve_inverse_problem(
+                            ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng, problem_design
+                        )
+
+                        if ips_min is None or \
+                                ips.functionals[ipp.problem] < ips_min.functionals[ipp.problem] or \
+                                (np.array(tuple(ips.functionals.values())) <=
+                                 np.array(tuple(ips_min.functionals.values()))).all():
+                            ips_min = ips
 
                     print(ipp)
-                    print(inverse_problem_solution_dict[ipp])
+                    print(ips_min)
                     print('-' * 80)
+
+                    with open(
+                            (f'1-parameter\\{problem_design.scheme} scheme\\'
+                            if problem_design.one_parameter
+                            else 'multi-parameter\\') +
+                            f'{problem}\\'
+                            f'Ea={ipp.Ea} ei={ipp.ei} ee={ipp.ee} RMp1={ipp.RMp1}\\'
+                            f'a={a} b={b}\\'
+                            f'b_lo={b_lo} b_up={b_up}\\'
+                            f'M={M}.pickle',
+                            'wb'
+                    ) as f:
+                        pickle.dump(InverseProblem(ipp, ips_min), f)
 
                 print('=' * 100)
                 print('TIME = ', time.asctime())
-
-                with open(f'{problem} a={a} b={b} b_lo={b_lo} b_up={b_up}.pickle', 'wb') as f:
-                    pickle.dump(inverse_problem_solution_dict, f)
 
     print('END TIME = ', time.asctime())
 
@@ -311,7 +276,8 @@ def get_individual_problem_solution(w, c1, c2, rng):
         print(i)
         solution_list.append(
             solve_inverse_problem(
-                1, 1, 1, 0.03, 0.05, 8, 0.1, 'full cloaking', 0, 100, 40, 0.01, 86, w, c1, c2, rng
+                # 1, 1, 1, 0.03, 0.05, 8, 0.1, 'full cloaking', 0, 100, 40, 0.01, 86, w, c1, c2, rng
+                1, 1, 1, 5, 5.5, 54, 6.5, 'full cloaking', 0, 100, 40, 0.001, 200, w, c1, c2, rng, True
             )
         )
         print(solution_list[-1])
@@ -429,27 +395,44 @@ def show_multi_layer_plots():
     linestyles = '-', '--', ':'  # Ji Je J
 
     # for problem in 'shielding', 'external cloaking', 'full cloaking':
-    for problem in 'external cloaking', 'full cloaking':
+    for problem in 'full cloaking',:
         colors_it = iter(colors)
 
         pp.figure()
 
         for a in 0.01, 0.03, 0.04:
             for b_up in 40, 70:
-                # with open(
-                #         'multi parameter a=0.01,0.03,0.04 b=0.05 b_lo=0.0045 b_up=40,70\\'
-                #         f'{problem} a={a} b=0.05 b_up={b_up}.pickle',
-                #         'rb'
-                # ) as f:
                 with open(
-                        '1 parameter\\'
-                        f'1 parameter {problem} a={a} b=0.05 b_up={b_up}.pickle',
+                        'multi parameter a=0.01,0.03,0.04 b=0.05 b_lo=0.0045 b_up=40,70\\'
+                        f'{problem} a={a} b=0.05 b_up={b_up}.pickle',
                         'rb'
                 ) as f:
+                    # with open(
+                    #         '1 parameter\\'
+                    #         f'1 parameter {problem} a={a} b=0.05 b_up={b_up}.pickle',
+                    #         'rb'
+                    # ) as f:
                     ips_dict = pickle.load(f)
 
                 x = np.array([ipp.shell_size for ipp in ips_dict.keys()])
                 y_array = np.array([[*ips.functionals.values()] for ips in ips_dict.values()]).T  # Ji Je J
+
+                # HARDCODE
+                # y_array = np.array([[*ips.functionals.values()] for ips in ips_dict.values()])  # Ji Je J
+                #
+                # if a == 0.01 and b_up == 70:
+                #     y_array[-1] = 6.041e-16, 9.249e-17, 3.483e-16
+                # elif a == 0.03:
+                #     if b_up == 40:
+                #         y_array[-1] = 7.044e-8, 2.349e-17, 3.522e-8
+                #     elif b_up == 70:
+                #         y_array[-1] = 2.717e-9, 2.117e-16, 1.358e-9
+                # elif a == 0.04 and b_up == 70:
+                #     y_array[-2] = 7.105e-6, 2.927e-16, 3.522e-6
+                #     y_array[-1] = 6.141e-6, 2.259e-10, 3.070e-6
+                #
+                # y_array = y_array.T
+                # HARDCODE
 
                 color = next(colors_it)
 
@@ -517,14 +500,31 @@ def show_2_layer_full_cloaking_plot():
 
 
 if __name__ == '__main__':
-    # w, c1, c2 = 0.5, 1, 1.5
-    # rng = np.random.default_rng()
-    # get_multi_layer_multi_parameter_problems_solutions(w, c1, c2, rng)  # tocheck x delta 0.01 8 0.01 86
-    # get_multi_layer_one_parameter_problems_solutions(w, c1, c2, rng)
-    # SAME_get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng)
-    # get_2_layer_full_cloaking_RMp1_dependence_plot()
-    # get_individual_problem_solution(w, c1, c2, rng)
-    # get_J_e_sqrt_part_plot()
+    w, c1, c2 = 0.5, 1, 1.5
+    rng = np.random.default_rng()  # tocheck x delta 0.01 8 0.01 86
 
-    # show_2_layer_full_cloaking_plot()
-    show_multi_layer_plots()
+    a_b_pairs = (0.03, 0.05),
+    b_lo_b_up_pairs = (0.005, 8), (0.005, 30), (0.005, 150), (0.005, 200)
+
+    get_multi_layer_problems_solutions(
+        ProblemDesign(False, None),
+        a_b_pairs,
+        b_lo_b_up_pairs,
+        w, c1, c2, rng
+    )
+
+    # get_multi_layer_problems_solutions(
+    #     ProblemDesign(True, 1),
+    #     a_b_pairs,
+    #     b_lo_b_up_pairs,
+    #     w, c1, c2, rng
+    # )
+    #
+    # get_multi_layer_problems_solutions(
+    #     ProblemDesign(True, 2),
+    #     a_b_pairs,
+    #     b_lo_b_up_pairs,
+    #     w, c1, c2, rng
+    # )
+    
+    # get_individual_problem_solution(w, c1, c2, rng)
