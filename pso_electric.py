@@ -1,6 +1,7 @@
 from collections import namedtuple
 import pickle
 import time
+import pathlib
 
 import numpy as np
 from scipy.sparse import diags
@@ -221,9 +222,16 @@ def get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
 
 
 def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pairs, w, c1, c2, rng):
+    # not ternary because without slashes
+    if problem_design.one_parameter:
+        root = pathlib.Path('1-parameter', f'{problem_design.scheme} scheme')
+    else:
+        root = pathlib.Path('multi-parameter')
+
     print('BEGIN TIME = ', time.asctime())
 
-    for problem in 'shielding', 'external cloaking', 'full cloaking':
+    # for problem in 'shielding', 'external cloaking', 'full cloaking':
+    for problem in 'full cloaking',:
         print(problem)
 
         for a, b in a_b_pairs:
@@ -232,12 +240,19 @@ def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pair
             for b_lo, b_up in b_lo_b_up_pairs:
                 print(b_lo, b_up)
 
+                d = (root /
+                     f'{problem}' /
+                     # f'Ea={ipp.Ea} ei={ipp.ei} ee={ipp.ee} RMp1={ipp.RMp1}' /
+                     f'a={a} b={b}' /
+                     f'b_lo={b_lo} b_up={b_up}')
+                d.mkdir(parents=True, exist_ok=True)
+
                 for M in range(2, 18, 2):
                     ipp, ips_min = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem), None
 
                     for i in range(20):
                         ips = solve_inverse_problem(
-                            ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng, problem_design
+                            ipp, 0, 200, 40, b_lo, b_up, w, c1, c2, rng, problem_design
                         )
 
                         if ips_min is None or \
@@ -250,18 +265,7 @@ def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pair
                     print(ips_min)
                     print('-' * 80)
 
-                    with open(
-                            (f'1-parameter\\{problem_design.scheme} scheme\\'
-                            if problem_design.one_parameter
-                            else 'multi-parameter\\') +
-                            f'{problem}\\'
-                            f'Ea={ipp.Ea} ei={ipp.ei} ee={ipp.ee} RMp1={ipp.RMp1}\\'
-                            f'a={a} b={b}\\'
-                            f'b_lo={b_lo} b_up={b_up}\\'
-                            f'M={M}.pickle',
-                            'wb'
-                    ) as f:
-                        pickle.dump(InverseProblem(ipp, ips_min), f)
+                    (d / f'M={M}.pickle').write_bytes(pickle.dumps(InverseProblem(ipp, ips_min)))
 
                 print('=' * 100)
                 print('TIME = ', time.asctime())
@@ -526,5 +530,5 @@ if __name__ == '__main__':
     #     b_lo_b_up_pairs,
     #     w, c1, c2, rng
     # )
-    
+
     # get_individual_problem_solution(w, c1, c2, rng)
