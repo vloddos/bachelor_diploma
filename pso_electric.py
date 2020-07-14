@@ -231,7 +231,6 @@ def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pair
     print('BEGIN TIME = ', time.asctime())
 
     for problem in 'shielding', 'external cloaking', 'full cloaking':
-    # for problem in 'full cloaking',:
         print(problem)
 
         for a, b in a_b_pairs:
@@ -254,6 +253,8 @@ def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pair
                         ips = solve_inverse_problem(
                             ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng, problem_design
                         )
+
+                        # print(ips)  # fordebug
 
                         if ips_min is None or \
                                 ips.functionals[ipp.problem] < ips_min.functionals[ipp.problem] or \
@@ -510,25 +511,25 @@ if __name__ == '__main__':
     a_b_pairs = (0.03, 0.05),
     b_lo_b_up_pairs = (0.005, 8), (0.005, 30), (0.005, 150), (0.005, 200)
 
+    get_multi_layer_problems_solutions(
+        ProblemDesign(False, None),
+        a_b_pairs,
+        b_lo_b_up_pairs,
+        w, c1, c2, rng
+    )
+    #
     # get_multi_layer_problems_solutions(
-    #     ProblemDesign(False, None),
+    #     ProblemDesign(True, 1),
     #     a_b_pairs,
     #     b_lo_b_up_pairs,
     #     w, c1, c2, rng
     # )
-
-    get_multi_layer_problems_solutions(
-        ProblemDesign(True, 1),
-        a_b_pairs,
-        b_lo_b_up_pairs,
-        w, c1, c2, rng
-    )
-
-    get_multi_layer_problems_solutions(
-        ProblemDesign(True, 2),
-        a_b_pairs,
-        b_lo_b_up_pairs,
-        w, c1, c2, rng
-    )
+    #
+    # get_multi_layer_problems_solutions(
+    #     ProblemDesign(True, 2),
+    #     a_b_pairs,
+    #     b_lo_b_up_pairs,
+    #     w, c1, c2, rng
+    # )
 
     # get_individual_problem_solution(w, c1, c2, rng)
