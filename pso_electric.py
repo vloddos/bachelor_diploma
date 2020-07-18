@@ -91,7 +91,9 @@ def get_solver_and_functional(inverse_problem_parameters):  # shell_size M
 # todo type annotations
 # totry to use python 3.8 with := anywhere
 # totry to use coconut python
-def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng, problem_design):
+def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, problem_design):
+    rng = np.random.default_rng()
+
     def F(v):
         if v.ndim == 1:
             return f(v)
@@ -172,21 +174,21 @@ def PSO(f, eps, iter_num, swarm_size, particle_size, b_lo, b_up, w, c1, c2, rng,
 
 def solve_inverse_problem(
         inverse_problem_parameters,
-        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, rng, problem_design
+        eps, iter_num, swarm_size, b_lo, b_up, w, c1, c2, problem_design
 ):
     solve_direct_problem, calculate_functionals, calculate_problem_functional = \
         get_solver_and_functional(inverse_problem_parameters)
 
     g = PSO(
         calculate_problem_functional,
-        eps, iter_num, swarm_size, inverse_problem_parameters.shell_size, b_lo, b_up, w, c1, c2, rng, problem_design
+        eps, iter_num, swarm_size, inverse_problem_parameters.shell_size, b_lo, b_up, w, c1, c2, problem_design
     )
 
     A, B = solve_direct_problem(g)
     return InverseProblemSolution(g, calculate_functionals(A[0], B[0]))
 
 
-def get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
+def get_2_layer_full_cloaking_problem_solutions(w, c1, c2):
     print('BEGIN TIME = ', time.asctime())
 
     # for RMp1 in 0.07, 0.15, 0.3, 0.6:
@@ -197,9 +199,10 @@ def get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
         for i in range(-1, -11, -1):
             e_min = 10 ** i
             for j in range(20):
-                ips_new = solve_inverse_problem(
-                    1, 1, 1, 0.01, 0.05, 2, RMp1, 'full cloaking', 0, 100, 20, e_min, 10, w, c1, c2, rng
-                )
+                ips_new = ...
+                # ips_new = solve_inverse_problem(
+                #     1, 1, 1, 0.01, 0.05, 2, RMp1, 'full cloaking', 0, 100, 20, e_min, 10, w, c1, c2
+                # )
                 ips_old = inverse_problem_solution_dict.get(e_min)
 
                 if ips_old is None or \
@@ -221,7 +224,7 @@ def get_2_layer_full_cloaking_problem_solutions(w, c1, c2, rng):
     print('END TIME = ', time.asctime())
 
 
-def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pairs, w, c1, c2, rng):
+def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pairs, w, c1, c2):
     # not ternary because without slashes
     if problem_design.one_parameter:
         root = pathlib.Path('1-parameter', f'{problem_design.scheme} scheme')
@@ -230,7 +233,8 @@ def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pair
 
     print('BEGIN TIME = ', time.asctime())
 
-    for problem in 'shielding', 'external cloaking', 'full cloaking':
+    # for problem in 'shielding', 'external cloaking', 'full cloaking':
+    for problem in 'full cloaking',:
         print(problem)
 
         for a, b in a_b_pairs:
@@ -246,12 +250,13 @@ def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pair
                      f'b_lo={b_lo} b_up={b_up}')
                 d.mkdir(parents=True, exist_ok=True)
 
-                for M in range(2, 18, 2):
+                # for M in range(2, 18, 2):
+                for M in 8, 10, 12, 14, 16:
                     ipp, ips_min = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem), None
 
                     for i in range(20):
                         ips = solve_inverse_problem(
-                            ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, rng, problem_design
+                            ipp, 0, 500, 40, b_lo, b_up, w, c1, c2, problem_design
                         )
 
                         # print(ips)  # fordebug
@@ -279,12 +284,12 @@ def get_individual_problem_solution(w, c1, c2, rng):
     solution_list = []
     for i in range(20):
         print(i)
-        solution_list.append(
-            solve_inverse_problem(
-                # 1, 1, 1, 0.03, 0.05, 8, 0.1, 'full cloaking', 0, 100, 40, 0.01, 86, w, c1, c2, rng
-                1, 1, 1, 5, 5.5, 54, 6.5, 'full cloaking', 0, 100, 40, 0.001, 200, w, c1, c2, rng, True
-            )
-        )
+        solution_list.append(...
+                             # solve_inverse_problem(
+                             #     1, 1, 1, 0.03, 0.05, 8, 0.1, 'full cloaking', 0, 100, 40, 0.01, 86, w, c1, c2, rng
+                             # 1, 1, 1, 5, 5.5, 54, 6.5, 'full cloaking', 0, 100, 40, 0.001, 200, w, c1, c2, ProblemDesign(True,1)
+                             # )
+                             )
         print(solution_list[-1])
         print('{:.15f}'.format(solution_list[-1].optimum_shell[1]))
         J_list.append(solution_list[-1].functionals['full cloaking'])
@@ -506,17 +511,10 @@ def show_2_layer_full_cloaking_plot():
 
 if __name__ == '__main__':
     w, c1, c2 = 0.5, 1, 1.5
-    rng = np.random.default_rng()  # tocheck x delta 0.01 8 0.01 86
 
-    a_b_pairs = (0.03, 0.05),
-    b_lo_b_up_pairs = (0.005, 8), (0.005, 30), (0.005, 150), (0.005, 200)
-
-    get_multi_layer_problems_solutions(
-        ProblemDesign(False, None),
-        a_b_pairs,
-        b_lo_b_up_pairs,
-        w, c1, c2, rng
-    )
+    ###
+    # a_b_pairs = (0.03, 0.05),
+    # b_lo_b_up_pairs = (0.005, 45), (0.005, 86)
     #
     # get_multi_layer_problems_solutions(
     #     ProblemDesign(True, 1),
@@ -532,4 +530,33 @@ if __name__ == '__main__':
     #     w, c1, c2, rng
     # )
 
-    # get_individual_problem_solution(w, c1, c2, rng)
+    ###
+    a_b_pairs = (0.04, 0.05),
+    b_lo_b_up_pairs = (0.005, 150),
+
+    get_multi_layer_problems_solutions(
+        ProblemDesign(False, None),
+        a_b_pairs,
+        b_lo_b_up_pairs,
+        w, c1, c2
+    )
+
+    exit()
+
+    ###
+    a_b_pairs = (0.04, 0.05),
+    b_lo_b_up_pairs = (0.005, 8), (0.005, 30), (0.005, 150), (0.005, 45), (0.005, 86)
+
+    get_multi_layer_problems_solutions(
+        ProblemDesign(True, 1),
+        a_b_pairs,
+        b_lo_b_up_pairs,
+        w, c1, c2
+    )
+
+    get_multi_layer_problems_solutions(
+        ProblemDesign(True, 2),
+        a_b_pairs,
+        b_lo_b_up_pairs,
+        w, c1, c2
+    )

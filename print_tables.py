@@ -95,7 +95,8 @@ def print_tables(problem_design, a_b_pairs, b_lo_b_up_pairs):
         problem_design_comment_part = 'multi-parameter'
         problem_design_label_part = 'multi_parameter'
 
-    for problem in 'shielding', 'external cloaking', 'full cloaking':
+    # for problem in 'shielding', 'external cloaking', 'full cloaking':
+    for problem in 'full cloaking',:
         for a, b in a_b_pairs:
             for b_lo, b_up in b_lo_b_up_pairs:
                 ip_list = [
@@ -223,9 +224,47 @@ def print_tables(problem_design, a_b_pairs, b_lo_b_up_pairs):
 
 
 if __name__ == '__main__':
-    a_b_pairs = (0.03, 0.05),
-    b_lo_b_up_pairs = (0.005, 8), (0.005, 30), (0.005, 150), (0.005, 200)
 
-    print_tables(ProblemDesign(False, None), a_b_pairs, b_lo_b_up_pairs)
-    print_tables(ProblemDesign(True, 1), a_b_pairs, b_lo_b_up_pairs)
-    print_tables(ProblemDesign(True, 2), a_b_pairs, b_lo_b_up_pairs)
+    ###
+    # a_b_pairs = (0.03, 0.05),
+    # b_lo_b_up_pairs = (0.005, 45), (0.005, 86)
+    #
+    # print_tables(
+    #     ProblemDesign(True, 1),
+    #     a_b_pairs,
+    #     b_lo_b_up_pairs
+    # )
+    #
+    # print_tables(
+    #     ProblemDesign(True, 2),
+    #     a_b_pairs,
+    #     b_lo_b_up_pairs
+    # )
+
+    ###
+    a_b_pairs = (0.04, 0.05),
+    # b_lo_b_up_pairs = (0.005, 45), (0.005, 86)
+    b_lo_b_up_pairs = (0.005, 150),
+
+    print_tables(
+        ProblemDesign(False, None),
+        a_b_pairs,
+        b_lo_b_up_pairs
+    )
+    exit()
+
+    ###
+    a_b_pairs = (0.04, 0.05),
+    b_lo_b_up_pairs = (0.005, 8), (0.005, 30), (0.005, 150), (0.005, 45), (0.005, 86)
+
+    print_tables(
+        ProblemDesign(True, 1),
+        a_b_pairs,
+        b_lo_b_up_pairs
+    )
+
+    print_tables(
+        ProblemDesign(True, 2),
+        a_b_pairs,
+        b_lo_b_up_pairs
+    )
