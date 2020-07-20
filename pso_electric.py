@@ -250,13 +250,12 @@ def get_multi_layer_problems_solutions(problem_design, a_b_pairs, b_lo_b_up_pair
                      f'b_lo={b_lo} b_up={b_up}')
                 d.mkdir(parents=True, exist_ok=True)
 
-                # for M in range(2, 18, 2):
-                for M in 8, 10, 12, 14, 16:
+                for M in range(2, 18, 2):
                     ipp, ips_min = InverseProblemParameters(1, 1, 1, a, b, M, 0.1, problem), None
 
                     for i in range(20):
                         ips = solve_inverse_problem(
-                            ipp, 0, 500, 40, b_lo, b_up, w, c1, c2, problem_design
+                            ipp, 0, 100, 40, b_lo, b_up, w, c1, c2, problem_design
                         )
 
                         # print(ips)  # fordebug
@@ -512,40 +511,17 @@ def show_2_layer_full_cloaking_plot():
 if __name__ == '__main__':
     w, c1, c2 = 0.5, 1, 1.5
 
-    ###
-    # a_b_pairs = (0.03, 0.05),
-    # b_lo_b_up_pairs = (0.005, 45), (0.005, 86)
-    #
+    a_b_pairs = (0.04, 0.05),
+    b_lo_b_up_pairs = (0.005, 50), (0.005, 100)
+
     # get_multi_layer_problems_solutions(
-    #     ProblemDesign(True, 1),
+    #     ProblemDesign(False, None),
     #     a_b_pairs,
     #     b_lo_b_up_pairs,
-    #     w, c1, c2, rng
+    #     w, c1, c2
     # )
     #
-    # get_multi_layer_problems_solutions(
-    #     ProblemDesign(True, 2),
-    #     a_b_pairs,
-    #     b_lo_b_up_pairs,
-    #     w, c1, c2, rng
-    # )
-
-    ###
-    a_b_pairs = (0.04, 0.05),
-    b_lo_b_up_pairs = (0.005, 150),
-
-    get_multi_layer_problems_solutions(
-        ProblemDesign(False, None),
-        a_b_pairs,
-        b_lo_b_up_pairs,
-        w, c1, c2
-    )
-
-    exit()
-
-    ###
-    a_b_pairs = (0.04, 0.05),
-    b_lo_b_up_pairs = (0.005, 8), (0.005, 30), (0.005, 150), (0.005, 45), (0.005, 86)
+    # exit()
 
     get_multi_layer_problems_solutions(
         ProblemDesign(True, 1),

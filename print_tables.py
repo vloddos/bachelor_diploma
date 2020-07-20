@@ -224,38 +224,14 @@ def print_tables(problem_design, a_b_pairs, b_lo_b_up_pairs):
 
 
 if __name__ == '__main__':
-
-    ###
-    # a_b_pairs = (0.03, 0.05),
-    # b_lo_b_up_pairs = (0.005, 45), (0.005, 86)
-    #
-    # print_tables(
-    #     ProblemDesign(True, 1),
-    #     a_b_pairs,
-    #     b_lo_b_up_pairs
-    # )
-    #
-    # print_tables(
-    #     ProblemDesign(True, 2),
-    #     a_b_pairs,
-    #     b_lo_b_up_pairs
-    # )
-
-    ###
     a_b_pairs = (0.04, 0.05),
-    # b_lo_b_up_pairs = (0.005, 45), (0.005, 86)
-    b_lo_b_up_pairs = (0.005, 150),
+    b_lo_b_up_pairs = (0.005, 50), (0.005, 100)
 
     print_tables(
         ProblemDesign(False, None),
         a_b_pairs,
         b_lo_b_up_pairs
     )
-    exit()
-
-    ###
-    a_b_pairs = (0.04, 0.05),
-    b_lo_b_up_pairs = (0.005, 8), (0.005, 30), (0.005, 150), (0.005, 45), (0.005, 86)
 
     print_tables(
         ProblemDesign(True, 1),

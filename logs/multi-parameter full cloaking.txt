@@ -282,3 +282,88 @@ InverseProblemSolution(optimum_shell=array([1.49719292e+02, 5.00000000e-03, 1.48
 ====================================================================================================
 TIME =  Thu Jul 16 12:56:00 2020
 END TIME =  Thu Jul 16 12:56:00 2020
+
+
+
+BEGIN TIME =  Mon Jul 20 11:42:41 2020
+full cloaking
+0.04 0.05
+0.005 50
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=2, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([50.        ,  0.12265845]), functionals={'shielding': 0.17956732614969373, 'external cloaking': 1.15833130384879e-16, 'full cloaking': 0.08978366307484692})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=4, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([5.0000000e+01, 5.0000000e-03, 5.0000000e+01, 7.9757382e-02]), functionals={'shielding': 0.009472893473576702, 'external cloaking': 8.528780000411432e-20, 'full cloaking': 0.004736446736788351})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=6, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([5.00000000e+01, 5.00000000e-03, 5.00000000e+01, 5.00000000e-03,
+       5.00000000e+01, 7.20932237e-02]), functionals={'shielding': 0.0017042132114685154, 'external cloaking': 9.764399953681654e-19, 'full cloaking': 0.0008521066057342583})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=8, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([5.00000000e+01, 5.00000000e-03, 4.90853015e+01, 5.00000000e-03,
+       4.99558836e+01, 5.00000000e-03, 4.89623127e+01, 8.26492431e-02]), functionals={'shielding': 0.0005914998237180697, 'external cloaking': 6.830526195520322e-15, 'full cloaking': 0.00029574991186245007})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=10, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([5.00000000e+01, 5.00000000e-03, 4.91542933e+01, 5.00000000e-03,
+       4.91267195e+01, 5.00000000e-03, 5.00000000e+01, 5.00000000e-03,
+       5.00000000e+01, 1.06725503e-01]), functionals={'shielding': 0.00028243156579330477, 'external cloaking': 7.455854401719468e-15, 'full cloaking': 0.0001412157829003803})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=12, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([5.00000000e-03, 5.00000000e+01, 5.00000000e-03, 5.00000000e+01,
+       5.00000000e-03, 4.69890007e+01, 3.26925502e+00, 5.00000000e+01,
+       5.00000000e-03, 5.00000000e+01, 5.00000000e-03, 4.57126533e+01]), functionals={'shielding': 0.0001919510197922089, 'external cloaking': 3.649213312224123e-16, 'full cloaking': 9.597550989628691e-05})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=14, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([5.0000000e-03, 5.0000000e+01, 5.0000000e-03, 5.0000000e+01,
+       5.0000000e-03, 5.0000000e+01, 5.0000000e-03, 5.0000000e+01,
+       5.0000000e-03, 5.0000000e+01, 6.3231312e-02, 5.0000000e+01,
+       5.0000000e-03, 5.0000000e+01]), functionals={'shielding': 0.00010221440539477928, 'external cloaking': 7.311848439312754e-17, 'full cloaking': 5.1107202697426196e-05})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=16, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([5.00000000e+01, 5.00000000e-03, 4.88830363e+01, 5.00000000e-03,
+       4.92711753e+01, 4.54207019e-01, 4.92624360e+01, 5.00000000e-03,
+       4.84307698e+01, 5.00000000e-03, 4.85106275e+01, 5.00000000e-03,
+       4.98861325e+01, 1.28004196e+00, 4.91577929e+01, 3.52872488e-02]), functionals={'shielding': 0.0004321962336760611, 'external cloaking': 1.0160000922032211e-13, 'full cloaking': 0.00021609811688883055})
+--------------------------------------------------------------------------------
+====================================================================================================
+TIME =  Mon Jul 20 11:51:49 2020
+0.005 100
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=2, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([100.        ,   0.11382115]), functionals={'shielding': 0.09693083907726407, 'external cloaking': 4.893196529303683e-17, 'full cloaking': 0.048465419538632065})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=4, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([1.00000000e+02, 5.00000000e-03, 1.00000000e+02, 6.26233004e-02]), functionals={'shielding': 0.0027735421220191074, 'external cloaking': 1.4562516764475332e-14, 'full cloaking': 0.001386771061016835})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=6, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([9.99981607e+01, 5.00000000e-03, 9.93441745e+01, 5.00120474e-03,
+       1.00000000e+02, 4.66952847e-02]), functionals={'shielding': 0.0002872464990101516, 'external cloaking': 9.90669515262909e-18, 'full cloaking': 0.00014362324950508077})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=8, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([1.00000000e+02, 5.00000000e-03, 9.98585362e+01, 5.00000000e-03,
+       9.93848048e+01, 4.02727526e-01, 9.91287688e+01, 3.16246454e-02]), functionals={'shielding': 0.0004526789644088049, 'external cloaking': 2.341976906117944e-14, 'full cloaking': 0.00022633948221611233})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=10, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([9.99636906e+01, 5.00000000e-03, 9.96295594e+01, 5.00000000e-03,
+       9.95774526e+01, 5.00000000e-03, 9.92416239e+01, 5.00000000e-03,
+       9.95694663e+01, 3.61057023e-02]), functionals={'shielding': 1.92401666568895e-05, 'external cloaking': 1.045152937501468e-17, 'full cloaking': 9.620083328449976e-06})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=12, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([1.00000000e+02, 5.00000000e-03, 1.00000000e+02, 6.53190133e-02,
+       1.00000000e+02, 5.00000000e-03, 1.00000000e+02, 5.00000000e-03,
+       9.93928250e+01, 5.00000000e-03, 9.99712709e+01, 3.42878894e-02]), functionals={'shielding': 3.234442797897836e-05, 'external cloaking': 6.211114527256399e-11, 'full cloaking': 1.6172245045061818e-05})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=14, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([1.00000000e+02, 5.00000000e-03, 1.00000000e+02, 5.00000000e-03,
+       1.00000000e+02, 1.99616068e-01, 9.98281495e+01, 5.00000000e-03,
+       1.00000000e+02, 5.00000000e-03, 1.00000000e+02, 5.00000000e-03,
+       1.00000000e+02, 3.37177011e-02]), functionals={'shielding': 1.6348505542295875e-05, 'external cloaking': 2.689450664594742e-15, 'full cloaking': 8.174252772492663e-06})
+--------------------------------------------------------------------------------
+InverseProblemParameters(Ea=1, ei=1, ee=1, a=0.04, b=0.05, shell_size=16, RMp1=0.1, problem='full cloaking')
+InverseProblemSolution(optimum_shell=array([9.98293831e+01, 5.00000000e-03, 9.96298760e+01, 1.73652075e-01,
+       9.97187909e+01, 5.00000000e-03, 1.00000000e+02, 5.00000000e-03,
+       1.00000000e+02, 5.19870849e-01, 9.99333286e+01, 5.00000000e-03,
+       1.00000000e+02, 5.00000000e-03, 1.00000000e+02, 3.39703092e-02]), functionals={'shielding': 2.8555093513586296e-05, 'external cloaking': 4.223960944970832e-18, 'full cloaking': 1.427754675679526e-05})
+--------------------------------------------------------------------------------
+====================================================================================================
+TIME =  Mon Jul 20 12:01:51 2020
+END TIME =  Mon Jul 20 12:01:51 2020
